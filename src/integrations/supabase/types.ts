@@ -14,6 +14,51 @@ export type Database = {
   }
   public: {
     Tables: {
+      acharya_public_profiles: {
+        Row: {
+          availability: boolean | null
+          bio_preview: string | null
+          created_at: string | null
+          experience_years: number | null
+          full_name: string
+          id: string
+          languages: string[] | null
+          location: string | null
+          sampradaya: string
+          specializations: string[] | null
+          updated_at: string | null
+          user_id: string
+        }
+        Insert: {
+          availability?: boolean | null
+          bio_preview?: string | null
+          created_at?: string | null
+          experience_years?: number | null
+          full_name: string
+          id?: string
+          languages?: string[] | null
+          location?: string | null
+          sampradaya: string
+          specializations?: string[] | null
+          updated_at?: string | null
+          user_id: string
+        }
+        Update: {
+          availability?: boolean | null
+          bio_preview?: string | null
+          created_at?: string | null
+          experience_years?: number | null
+          full_name?: string
+          id?: string
+          languages?: string[] | null
+          location?: string | null
+          sampradaya?: string
+          specializations?: string[] | null
+          updated_at?: string | null
+          user_id?: string
+        }
+        Relationships: []
+      }
       conversations: {
         Row: {
           acharya_id: string
@@ -44,21 +89,7 @@ export type Database = {
             foreignKeyName: "conversations_acharya_id_fkey"
             columns: ["acharya_id"]
             isOneToOne: false
-            referencedRelation: "acharya_public_profiles"
-            referencedColumns: ["user_id"]
-          },
-          {
-            foreignKeyName: "conversations_acharya_id_fkey"
-            columns: ["acharya_id"]
-            isOneToOne: false
             referencedRelation: "profiles"
-            referencedColumns: ["user_id"]
-          },
-          {
-            foreignKeyName: "conversations_grihasta_id_fkey"
-            columns: ["grihasta_id"]
-            isOneToOne: false
-            referencedRelation: "acharya_public_profiles"
             referencedColumns: ["user_id"]
           },
           {
@@ -155,48 +186,7 @@ export type Database = {
       }
     }
     Views: {
-      acharya_public_profiles: {
-        Row: {
-          availability: boolean | null
-          bio_preview: string | null
-          created_at: string | null
-          experience_years: number | null
-          full_name: string | null
-          id: string | null
-          languages: string[] | null
-          location: string | null
-          sampradaya: Database["public"]["Enums"]["sampradaya"] | null
-          specializations: string[] | null
-          user_id: string | null
-        }
-        Insert: {
-          availability?: boolean | null
-          bio_preview?: never
-          created_at?: string | null
-          experience_years?: number | null
-          full_name?: string | null
-          id?: string | null
-          languages?: string[] | null
-          location?: never
-          sampradaya?: Database["public"]["Enums"]["sampradaya"] | null
-          specializations?: string[] | null
-          user_id?: string | null
-        }
-        Update: {
-          availability?: boolean | null
-          bio_preview?: never
-          created_at?: string | null
-          experience_years?: number | null
-          full_name?: string | null
-          id?: string | null
-          languages?: string[] | null
-          location?: never
-          sampradaya?: Database["public"]["Enums"]["sampradaya"] | null
-          specializations?: string[] | null
-          user_id?: string | null
-        }
-        Relationships: []
-      }
+      [_ in never]: never
     }
     Functions: {
       [_ in never]: never
