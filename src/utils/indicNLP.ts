@@ -190,8 +190,9 @@ class IndicNLPEngine {
         }
       }
       
-      // No documents or no relevant content found
-      return this.getNoAnswerResponse(config.language);
+      // No documents or no relevant content found - search general knowledge
+      console.log("No relevant documents found, searching general knowledge...");
+      return await this.searchGeneralKnowledge(message, config.language);
       
     } catch (error) {
       console.error("Error generating response with Indic NLP:", error);
@@ -507,6 +508,33 @@ class IndicNLPEngine {
     // If no specific topic found, return a generic dharma-related topic
     // DO NOT extract words from the question itself
     return "dharma";
+  }
+
+  private async searchGeneralKnowledge(message: string, language: string): Promise<string> {
+    try {
+      console.log("Searching general knowledge for:", message);
+      
+      const { supabase } = await import('@/integrations/supabase/client');
+      
+      const { data, error } = await supabase.functions.invoke('perplexity-search', {
+        body: { message, language }
+      });
+
+      if (error) {
+        console.error('Error calling perplexity-search:', error);
+        return this.getNoAnswerResponse(language);
+      }
+
+      if (data?.answer) {
+        console.log("Found general knowledge answer:", data.answer.substring(0, 100));
+        return data.answer;
+      }
+
+      return this.getNoAnswerResponse(language);
+    } catch (error) {
+      console.error('Error in searchGeneralKnowledge:', error);
+      return this.getNoAnswerResponse(language);
+    }
   }
 
   private getNoAnswerResponse(language: string): string {
