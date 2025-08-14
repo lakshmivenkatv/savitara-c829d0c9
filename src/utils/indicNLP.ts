@@ -476,27 +476,38 @@ class IndicNLPEngine {
         // Found a question line
         if (line.toLowerCase().includes('question:')) {
           const questionText = line.replace(/.*question:\s*/i, '').trim();
-          console.log("Found question:", questionText);
+          console.log(`Found question at line ${i}:`, questionText);
           
           // Calculate similarity between user question and found question
           const questionScore = this.calculateQuestionSimilarity(question, questionText);
           console.log("Question similarity score:", questionScore);
           
           if (questionScore > 0.3) { // Threshold for question similarity
-            // Look for the corresponding answer
-            for (let j = i + 1; j < Math.min(i + 10, lines.length); j++) {
+            console.log("Good match! Looking for answer...");
+            
+            // Look for the IMMEDIATE next answer (not in other chunks)
+            for (let j = i + 1; j < lines.length; j++) {
               const answerLine = lines[j];
+              console.log(`Checking line ${j}:`, answerLine);
+              
               if (answerLine.toLowerCase().includes('answer:')) {
                 const answer = answerLine.replace(/.*answer:\s*/i, '').trim();
-                if (answer.length > 10) {
-                  console.log("Found matching answer:", answer.substring(0, 100));
+                if (answer.length > 0) {
+                  console.log("*** FOUND MATCHING ANSWER ***:", answer);
                   
                   if (questionScore > bestScore) {
                     bestScore = questionScore;
                     bestMatch = answer;
+                    console.log("*** SET AS BEST MATCH ***");
                   }
-                  break;
+                  break; // Found the answer for this question, stop looking
                 }
+              }
+              
+              // If we hit another question before finding an answer, stop
+              if (answerLine.toLowerCase().includes('question:')) {
+                console.log("Hit next question without finding answer, stopping");
+                break;
               }
             }
           }
