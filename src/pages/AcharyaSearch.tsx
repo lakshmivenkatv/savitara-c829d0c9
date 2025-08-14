@@ -101,19 +101,27 @@ export default function AcharyaSearch() {
         return;
       }
 
+      console.log('Starting conversation with Acharya:', acharyaId, 'for user:', user.id);
+
       // Check if conversation already exists
-      const { data: existingConversation } = await supabase
+      const { data: existingConversation, error: checkError } = await supabase
         .from('conversations')
         .select('id')
         .eq('grihasta_id', user.id)
         .eq('acharya_id', acharyaId)
-        .single();
+        .maybeSingle();
+
+      if (checkError) {
+        console.error('Error checking existing conversation:', checkError);
+      }
 
       if (existingConversation) {
+        console.log('Found existing conversation:', existingConversation.id);
         navigate(`/chat/${existingConversation.id}`);
         return;
       }
 
+      console.log('Creating new conversation...');
       // Create new conversation
       const { data, error } = await supabase
         .from('conversations')
@@ -125,14 +133,26 @@ export default function AcharyaSearch() {
         .select()
         .single();
 
-      if (error) throw error;
+      if (error) {
+        console.error('Error creating conversation:', error);
+        throw error;
+      }
 
+      console.log('Successfully created conversation:', data.id);
       navigate(`/chat/${data.id}`);
     } catch (error: any) {
       console.error('Error starting conversation:', error);
+      
+      let errorMessage = "Failed to start conversation";
+      if (error?.code === '42501') {
+        errorMessage = "Permission denied. Please ensure you have a complete profile.";
+      } else if (error?.message) {
+        errorMessage = error.message;
+      }
+      
       toast({
         title: "Error",
-        description: "Failed to start conversation",
+        description: errorMessage,
         variant: "destructive",
       });
     }
