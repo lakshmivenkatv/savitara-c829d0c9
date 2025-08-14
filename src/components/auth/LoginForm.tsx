@@ -5,7 +5,11 @@ import { Label } from '@/components/ui/label';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 
-export const LoginForm = () => {
+interface LoginFormProps {
+  onForgotPassword: () => void;
+}
+
+export const LoginForm = ({ onForgotPassword }: LoginFormProps) => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [isLoading, setIsLoading] = useState(false);
@@ -64,6 +68,15 @@ export const LoginForm = () => {
       
       <Button type="submit" className="w-full" disabled={isLoading}>
         {isLoading ? 'Logging in...' : 'Log In'}
+      </Button>
+      
+      <Button 
+        type="button" 
+        variant="link" 
+        className="w-full p-0 h-auto" 
+        onClick={onForgotPassword}
+      >
+        Forgot your password?
       </Button>
     </form>
   );

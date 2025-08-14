@@ -1,11 +1,24 @@
 import { useState } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Button } from '@/components/ui/button';
 import { LoginForm } from './LoginForm';
 import { SignupForm } from './SignupForm';
+import { ForgotPassword } from './ForgotPassword';
+import { PhoneAuth } from './PhoneAuth';
+import { Mail, Phone, ArrowLeft } from 'lucide-react';
 
 export const AuthPage = () => {
-  const [activeTab, setActiveTab] = useState('login');
+  const [activeTab, setActiveTab] = useState('email');
+  const [showForgotPassword, setShowForgotPassword] = useState(false);
+
+  if (showForgotPassword) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-orange-50 to-orange-100 p-4">
+        <ForgotPassword onBack={() => setShowForgotPassword(false)} />
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-orange-50 to-orange-100 p-4">
@@ -22,16 +35,35 @@ export const AuthPage = () => {
         <CardContent>
           <Tabs value={activeTab} onValueChange={setActiveTab}>
             <TabsList className="grid w-full grid-cols-2">
-              <TabsTrigger value="login">Login</TabsTrigger>
-              <TabsTrigger value="signup">Sign Up</TabsTrigger>
+              <TabsTrigger value="email" className="flex items-center gap-2">
+                <Mail className="w-4 h-4" />
+                Email
+              </TabsTrigger>
+              <TabsTrigger value="phone" className="flex items-center gap-2">
+                <Phone className="w-4 h-4" />
+                Phone
+              </TabsTrigger>
             </TabsList>
             
-            <TabsContent value="login">
-              <LoginForm />
+            <TabsContent value="email">
+              <Tabs value="login" className="w-full">
+                <TabsList className="grid w-full grid-cols-2">
+                  <TabsTrigger value="login">Login</TabsTrigger>
+                  <TabsTrigger value="signup">Sign Up</TabsTrigger>
+                </TabsList>
+                
+                <TabsContent value="login">
+                  <LoginForm onForgotPassword={() => setShowForgotPassword(true)} />
+                </TabsContent>
+                
+                <TabsContent value="signup">
+                  <SignupForm />
+                </TabsContent>
+              </Tabs>
             </TabsContent>
             
-            <TabsContent value="signup">
-              <SignupForm />
+            <TabsContent value="phone">
+              <PhoneAuth onBack={() => setActiveTab('email')} />
             </TabsContent>
           </Tabs>
         </CardContent>
