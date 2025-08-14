@@ -349,15 +349,20 @@ class IndicNLPEngine {
     if (!langTemplates) {
       console.log("Language not found, using English");
       const englishTemplates = this.getTemplatesByIntent(this.contextualTemplates.english, analysis);
-      const selectedTemplate = englishTemplates[0].replace("{topic}", topic);
-      console.log("Selected English template:", selectedTemplate);
-      return selectedTemplate;
+      if (englishTemplates.length > 0) {
+        const selectedTemplate = englishTemplates[0].replace("{topic}", topic);
+        console.log("Selected English template:", selectedTemplate);
+        return selectedTemplate;
+      }
+      return "I understand your question about spiritual matters. Could you please provide more specific details?";
     }
     
     const questionTemplates = this.getTemplatesByIntent(langTemplates, analysis);
-    if (!questionTemplates) {
+    if (!questionTemplates || questionTemplates.length === 0) {
       console.log("No templates found for question type, using fallback");
-      return `${topic} के बारे में विस्तार से जानकारी उपलब्ध है।`;
+      return language === 'hindi' 
+        ? "आपके प्रश्न के बारे में विस्तार से जानकारी उपलब्ध है। कृपया और स्पष्ट करें।"
+        : "I understand your spiritual inquiry. Could you please be more specific?";
     }
     
     const template = questionTemplates[Math.floor(Math.random() * questionTemplates.length)];
@@ -458,14 +463,18 @@ class IndicNLPEngine {
   private extractMainTopic(message: string): string {
     const lowerMessage = message.toLowerCase();
     
-    // Enhanced topic extraction
+    // Enhanced topic extraction - only return meaningful topics
     const topicKeywords = {
-      meditation: ['meditation', 'dhyana', 'ध्यान', 'ध्यान', 'meditate'],
+      meditation: ['meditation', 'dhyana', 'ध्यान', 'meditate'],
       prayer: ['prayer', 'pray', 'प्रार्थना', 'पूजा', 'worship'],
       scripture: ['scripture', 'veda', 'वेद', 'shastra', 'शास्त्र', 'gita'],
       festival: ['festival', 'celebration', 'त्योहार', 'उत्सव'],
       ritual: ['ritual', 'ceremony', 'संस्कार', 'कर्म'],
-      philosophy: ['philosophy', 'darshan', 'दर्शन', 'truth', 'सत्य']
+      philosophy: ['philosophy', 'darshan', 'दर्शन', 'truth', 'सत्य'],
+      yoga: ['yoga', 'योग', 'asana', 'pranayama'],
+      dharma: ['dharma', 'धर्म', 'righteousness', 'duty'],
+      karma: ['karma', 'कर्म', 'action', 'deed'],
+      moksha: ['moksha', 'मोक्ष', 'liberation', 'enlightenment']
     };
     
     for (const [topic, keywords] of Object.entries(topicKeywords)) {
@@ -474,14 +483,8 @@ class IndicNLPEngine {
       }
     }
     
-    // Extract any capitalized words or nouns
-    const words = message.split(/\s+/);
-    for (const word of words) {
-      if (word.length > 3 && (word[0] === word[0].toUpperCase() || word.length > 6)) {
-        return word.toLowerCase();
-      }
-    }
-    
+    // If no specific topic found, return a generic dharma-related topic
+    // DO NOT extract words from the question itself
     return "dharma";
   }
 
