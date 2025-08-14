@@ -146,9 +146,8 @@ export const ChatInterface = () => {
             </span>
           </div>
         </div>
-        <div className="flex flex-row items-center justify-between gap-4">
+        <div className="flex flex-row items-center justify-center">
           <EngineSelector value={engine} onValueChange={setEngine} />
-          <LanguageSelector value={language} onValueChange={setLanguage} />
         </div>
         {isInitializingIndic && (
           <div className="text-sm text-muted-foreground flex items-center gap-2">
@@ -228,7 +227,8 @@ export const ChatInterface = () => {
           </div>
         </ScrollArea>
         
-        <div className="flex space-x-2">
+        <div className="flex items-center space-x-2">
+          <LanguageSelector value={language} onValueChange={setLanguage} />
           <Input
             value={input}
             onChange={(e) => setInput(e.target.value)}
