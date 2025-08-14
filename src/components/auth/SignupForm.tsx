@@ -33,32 +33,22 @@ export const SignupForm = () => {
         password: formData.password,
         options: {
           emailRedirectTo: `${window.location.origin}/`,
+          data: {
+            full_name: formData.fullName,
+            user_type: formData.userType,
+            sampradaya: formData.sampradaya,
+            location: formData.location,
+            bio: formData.bio,
+            languages: formData.languages.join(','),
+            ...(formData.userType === 'acharya' && {
+              experience_years: formData.experienceYears,
+              specializations: formData.specializations.join(','),
+            }),
+          },
         },
       });
 
       if (authError) throw authError;
-
-      if (authData.user) {
-        const profileData = {
-          user_id: authData.user.id,
-          full_name: formData.fullName,
-          user_type: formData.userType as 'acharya' | 'grihasta',
-          sampradaya: formData.sampradaya as 'madhva' | 'vaishnava' | 'smarta',
-          location: formData.location,
-          bio: formData.bio,
-          languages: formData.languages,
-          ...(formData.userType === 'acharya' && {
-            experience_years: parseInt(formData.experienceYears) || null,
-            specializations: formData.specializations,
-          }),
-        };
-
-        const { error: profileError } = await supabase
-          .from('profiles')
-          .insert(profileData);
-
-        if (profileError) throw profileError;
-      }
 
       toast({
         title: "Success",
