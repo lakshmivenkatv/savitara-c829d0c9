@@ -15,19 +15,38 @@ export const ResetPassword = () => {
   const navigate = useNavigate();
 
   useEffect(() => {
-    // Check if we have the reset token in the URL
-    const hashParams = new URLSearchParams(window.location.hash.substring(1));
-    const accessToken = hashParams.get('access_token');
-    const refreshToken = hashParams.get('refresh_token');
+    // Check for session recovery from email link
+    const handleEmailLink = async () => {
+      const { data, error } = await supabase.auth.getSession();
+      
+      if (error) {
+        console.error('Session error:', error);
+        toast({
+          title: "Invalid Reset Link",
+          description: "This password reset link is invalid or has expired.",
+          variant: "destructive",
+        });
+        navigate('/');
+        return;
+      }
 
-    if (!accessToken || !refreshToken) {
-      toast({
-        title: "Invalid Reset Link",
-        description: "This password reset link is invalid or has expired.",
-        variant: "destructive",
-      });
-      navigate('/');
-    }
+      // If no session, check URL hash for tokens
+      if (!data.session) {
+        const hashParams = new URLSearchParams(window.location.hash.substring(1));
+        const accessToken = hashParams.get('access_token');
+        
+        if (!accessToken) {
+          toast({
+            title: "Invalid Reset Link", 
+            description: "This password reset link is invalid or has expired.",
+            variant: "destructive",
+          });
+          navigate('/');
+        }
+      }
+    };
+
+    handleEmailLink();
   }, [navigate, toast]);
 
   const handleResetPassword = async (e: React.FormEvent) => {
