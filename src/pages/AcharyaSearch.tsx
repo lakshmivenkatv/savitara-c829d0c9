@@ -42,14 +42,17 @@ export default function AcharyaSearch() {
 
   const fetchAcharyas = async () => {
     try {
+      console.log('Fetching Acharyas from acharya_public_profiles...');
       const { data, error } = await supabase
         .from('acharya_public_profiles')
         .select('*')
         .eq('availability', true);
 
+      console.log('Acharyas data:', data, 'Error:', error);
       if (error) throw error;
       setAcharyas(data || []);
     } catch (error: any) {
+      console.error('Error fetching acharyas:', error);
       toast({
         title: "Error",
         description: "Failed to fetch Acharyas",
@@ -103,7 +106,7 @@ export default function AcharyaSearch() {
 
       if (error) throw error;
 
-      navigate(`/conversation/${data.id}`);
+      navigate(`/chat/${data.id}`);
     } catch (error: any) {
       toast({
         title: "Error",

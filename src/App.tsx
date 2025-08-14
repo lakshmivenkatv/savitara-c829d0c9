@@ -8,6 +8,8 @@ import { User } from "@supabase/supabase-js";
 import { supabase } from "@/integrations/supabase/client";
 import Index from "./pages/Index";
 import NotFound from "./pages/NotFound";
+import Conversations from "./pages/Conversations";
+import Chat from "./pages/Chat";
 import { AuthPage } from "./components/auth/AuthPage";
 import { ResetPassword } from "./components/auth/ResetPassword";
 import AcharyaSearch from "./pages/AcharyaSearch";
@@ -67,6 +69,8 @@ const App = () => {
             <Routes>
               <Route path="/" element={<Index />} />
               <Route path="/acharyas" element={<AcharyaSearch />} />
+              <Route path="/conversations" element={<Conversations />} />
+              <Route path="/chat/:conversationId" element={<Chat />} />
               <Route path="/reset-password" element={<ResetPassword />} />
               {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
               <Route path="*" element={<NotFound />} />
