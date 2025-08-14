@@ -16,37 +16,96 @@ interface MessageAnalysis {
 class IndicNLPEngine {
   private static instance: IndicNLPEngine;
   private isInitialized = false;
-  private indicTemplates: Record<string, string[]>;
   private bertModel: any = null;
+  private contextualTemplates: Record<string, Record<string, string[]>>;
 
   constructor() {
-    // Pre-built response templates for different languages
-    this.indicTemplates = {
-      hindi: [
-        "हिंदू धर्म में इस विषय पर विचार करते हुए, मैं कह सकता हूं कि {topic} का महत्व वेदों और पुराणों में स्पष्ट रूप से वर्णित है।",
-        "आपके प्रश्न के संबंध में, {topic} के बारे में शास्त्रों में उल्लेख है कि यह आध्यात्मिक विकास के लिए आवश्यक है।",
-        "धर्म शास्त्रों के अनुसार, {topic} का अभ्यास करने से मन की शुद्धता और आत्मिक उन्नति होती है।"
-      ],
-      sanskrit: [
-        "धर्मशास्त्रेषु {topic} विषये उल्लिखितम् अस्ति यत् एतत् आध्यात्मिकविकासार्थं आवश्यकम्।",
-        "वेदेषु पुराणेषु च {topic} महत्वं स्पष्टरूपेण वर्णितम् अस्ति।",
-        "शास्त्राणां मतेन {topic} अभ्यासेन मनसः शुद्धिः आत्मनः उन्नतिः च भवति।"
-      ],
-      telugu: [
-        "హిందూ ధర్మంలో {topic} గురించి వేదాలు మరియు పురాణాలలో స్పష్టంగా వివరించబడింది.",
-        "మీ ప్రశ్న గురించి, {topic} శాస్త్రాలలో ఆధ్యాత్మిక అభివృద్ధికి అవసరమని చెప్పబడింది.",
-        "ధర్మ శాస్త్రాల ప్రకారం, {topic} అభ్యాసం చేయడం వల్ల మనస్సు యొక్క పవిత్రత మరియు ఆత్మిక పురోగతి సాధించవచ్చు।"
-      ],
-      kannada: [
-        "ಹಿಂದೂ ಧರ್ಮದಲ್ಲಿ {topic} ಬಗ್ಗೆ ವೇದಗಳು ಮತ್ತು ಪುರಾಣಗಳಲ್ಲಿ ಸ್ಪಷ್ಟವಾಗಿ ವಿವರಿಸಲಾಗಿದೆ.",
-        "ನಿಮ್ಮ ಪ್ರಶ್ನೆಯ ಬಗ್ಗೆ, {topic} ಶಾಸ್ತ್ರಗಳಲ್ಲಿ ಆಧ್ಯಾತ್ಮಿಕ ಅಭಿವೃದ್ಧಿಗೆ ಅಗತ್ಯವೆಂದು ಹೇಳಲಾಗಿದೆ.",
-        "ಧರ್ಮ ಶಾಸ್ತ್ರಗಳ ಪ್ರಕಾರ, {topic} ಅಭ್ಯಾಸ ಮಾಡುವುದರಿಂದ ಮನಸ್ಸಿನ ಪವಿತ್ರತೆ ಮತ್ತು ಆಧ್ಯಾತ್ಮಿಕ ಪ್ರಗತಿ ಸಾಧಿಸಬಹುದು."
-      ],
-      english: [
-        "In Hindu Dharma, regarding {topic}, the Vedas and Puranas clearly describe its significance for spiritual development.",
-        "Concerning your question about {topic}, the scriptures mention that it is essential for spiritual growth and mental purification.",
-        "According to dharmic texts, practicing {topic} leads to the purification of mind and spiritual advancement."
-      ]
+    // Enhanced contextual templates with more variety
+    this.contextualTemplates = {
+      hindi: {
+        definition: [
+          "{topic} का अर्थ और परिभाषा को समझते हैं तो यह आध्यात्मिक जीवन की आधारशिला है।",
+          "वैदिक दर्शन में {topic} की स्पष्ट व्याख्या मिलती है जो जीवन को दिशा देती है।",
+          "{topic} के मूल तत्वों को समझना आत्म-साक्षात्कार की ओर पहला कदम है।"
+        ],
+        process: [
+          "{topic} का अभ्यास करने की पद्धति शास्त्रों में विस्तार से बताई गई है।",
+          "गुरु परंपरा के अनुसार {topic} को इस प्रकार अपनाना चाहिए।",
+          "{topic} की साधना में धैर्य और निरंतरता सबसे महत्वपूर्ण है।"
+        ],
+        explanation: [
+          "{topic} के पीछे का गहरा दर्शन यह है कि सभी कुछ परस्पर जुड़ा हुआ है।",
+          "हमारे ऋषि-मुनियों ने {topic} के माध्यम से जीवन की सच्चाई को समझाया है।",
+          "{topic} केवल सिद्धांत नहीं बल्कि जीने का तरीका है।"
+        ],
+        general: [
+          "{topic} के बारे में शास्त्रों में गहन ज्ञान प्राप्त होता है।",
+          "वैदिक परंपरा में {topic} का महत्वपूर्ण स्थान है।"
+        ]
+      },
+      sanskrit: {
+        definition: [
+          "{topic} विषये वेदेषु स्पष्टं विवरणं प्राप्यते।",
+          "धर्मशास्त्राणां मतेन {topic} आध्यात्मिकजीवनस्य मूलभूतं तत्वम् अस्ति।"
+        ],
+        process: [
+          "{topic} अभ्यासस्य विधिः शास्त्रेषु विस्तारेण वर्णितः।",
+          "गुरुपरम्परया {topic} साधनं कर्तव्यम्।"
+        ],
+        explanation: [
+          "{topic} तत्वं सर्वस्य परस्परसम्बन्धं दर्शयति।",
+          "{topic} केवलं सिद्धान्तो न अपितु जीवनपद्धतिः।"
+        ]
+      },
+      telugu: {
+        definition: [
+          "{topic} గురించి వేదాలలో స్పష్టమైన వివరణ లభిస్తుంది।",
+          "ధర్మ శాస్త్రాల ప్రకారం {topic} ఆధ్యాత్మిక జీవితానికి పునాది।"
+        ],
+        process: [
+          "{topic} అభ్యాసం చేసే పద్ధతి శాస్త్రాలలో వివరంగా చెప్పబడింది।",
+          "గురు సంప్రదాయం ప్రకారం {topic} ని ఈ విధంగా అనుసరించాలి।"
+        ],
+        explanation: [
+          "{topic} వెనుక ఉన్న లోతైన తత్వం అన్నీ పరస్పరం అనుసంధానించబడి ఉన్నాయి.",
+          "{topic} కేవలం సిద్ధాంతం కాదు, జీవించే విధానం।"
+        ]
+      },
+      kannada: {
+        definition: [
+          "{topic} ಬಗ್ಗೆ ವೇದಗಳಲ್ಲಿ ಸ್ಪಷ್ಟವಾದ ವಿವರಣೆ ಲಭಿಸುತ್ತದೆ।",
+          "ಧರ್ಮ ಶಾಸ್ತ್ರಗಳ ಪ್ರಕಾರ {topic} ಆಧ್ಯಾತ್ಮಿಕ ಜೀವನಕ್ಕೆ ಅಡಿಪಾಯ।"
+        ],
+        process: [
+          "{topic} ಅಭ್ಯಾಸ ಮಾಡುವ ವಿಧಾನ ಶಾಸ್ತ್ರಗಳಲ್ಲಿ ವಿಸ್ತಾರವಾಗಿ ಹೇಳಲಾಗಿದೆ।",
+          "ಗುರು ಸಂಪ್ರದಾಯದ ಪ್ರಕಾರ {topic} ಅನ್ನು ಈ ರೀತಿ ಅನುಸರಿಸಬೇಕು।"
+        ],
+        explanation: [
+          "{topic} ಹಿಂದಿರುವ ಆಳವಾದ ತತ್ವ ಎಲ್ಲವೂ ಪರಸ್ಪರ ಸಂಬಂಧಿತವಾಗಿದೆ.",
+          "{topic} ಕೇವಲ ಸಿದ್ಧಾಂತವಲ್ಲ, ಬದುಕುವ ವಿಧಾನ।"
+        ]
+      },
+      english: {
+        definition: [
+          "Understanding {topic} reveals it as a fundamental principle of spiritual life.",
+          "Vedic philosophy provides clear explanations of {topic} that guide our existence.",
+          "Grasping the core elements of {topic} is the first step toward self-realization."
+        ],
+        process: [
+          "The methodology for practicing {topic} is detailed extensively in the scriptures.",
+          "According to the guru tradition, {topic} should be adopted in this manner.",
+          "In the practice of {topic}, patience and consistency are most important."
+        ],
+        explanation: [
+          "The profound philosophy behind {topic} is that everything is interconnected.",
+          "Our sages have explained life's truth through {topic}.",
+          "{topic} is not merely a principle but a way of living."
+        ],
+        general: [
+          "The scriptures contain profound knowledge about {topic}.",
+          "{topic} holds an important place in the Vedic tradition."
+        ]
+      }
     };
   }
 
@@ -82,28 +141,6 @@ class IndicNLPEngine {
     console.log("Advanced Indic NLP engine initialized with contextual understanding");
   }
 
-  private getRitualContext(language: string): string {
-    const ritualContexts: Record<string, string> = {
-      hindi: " वैदिक परंपरा में अनुष्ठानों का विशेष महत्व है और इन्हें शुद्ध मन से करना चाहिए।",
-      sanskrit: " वैदिकपरम्परायां अनुष्ठानानां विशेषमहत्वं अस्ति तानि च शुद्धमनसा कर्तव्यानि।",
-      telugu: " వైదిక సంప్రదాయంలో కర్మకాండలకు ప్రత్యేక ప్రాముఖ్యత ఉంది మరియు వాటిని పవిత్ర మనసుతో చేయాలి।",
-      kannada: " ವೈದಿಕ ಸಂಪ್ರದಾಯದಲ್ಲಿ ಆಚರಣೆಗಳಿಗೆ ವಿಶೇಷ ಮಹತ್ವವಿದೆ ಮತ್ತು ಅವುಗಳನ್ನು ಪವಿತ್ರ ಮನಸ್ಸಿನಿಂದ ಮಾಡಬೇಕು।",
-      english: " In Vedic tradition, rituals hold special significance and should be performed with a pure mind."
-    };
-    return ritualContexts[language] || ritualContexts.english;
-  }
-
-  private getScriptureContext(language: string): string {
-    const scriptureContexts: Record<string, string> = {
-      hindi: " हमारे शास्त्र ज्ञान और आचार दोनों का स्रोत हैं और इनका अध्ययन गुरु मार्गदर्शन में करना चाहिए।",
-      sanskrit: " अस्माकं शास्त्राणि ज्ञानस्य आचारस्य च स्रोतः सन्ति तेषां अध्ययनं गुरुमार्गदर्शने कर्तव्यम्।",
-      telugu: " మన శాస్త్రాలు జ్ఞానం మరియు ఆచారం రెండింటికీ మూలం మరియు వాటిని గురువు మార్గదర్శకత్వంలో అధ్యయనం చేయాలి।",
-      kannada: " ನಮ್ಮ ಶಾಸ್ತ್ರಗಳು ಜ್ಞಾನ ಮತ್ತು ಆಚರಣೆ ಎರಡಕ್ಕೂ ಮೂಲವಾಗಿದೆ ಮತ್ತು ಅವುಗಳನ್ನು ಗುರು ಮಾರ್ಗದರ್ಶನದಲ್ಲಿ ಅಧ್ಯಯನ ಮಾಡಬೇಕು।",
-      english: " Our scriptures are the source of both knowledge and conduct, and should be studied under proper guidance."
-    };
-    return scriptureContexts[language] || scriptureContexts.english;
-  }
-
   async generateResponse(message: string, config: IndicNLPConfig): Promise<string> {
     if (!this.isInitialized) {
       await this.initialize();
@@ -127,23 +164,16 @@ class IndicNLPEngine {
   }
 
   private async analyzeMessage(message: string, language: string): Promise<MessageAnalysis> {
+    console.log("Analyzing message:", message);
+    
     // Enhanced message analysis using NLP techniques
-    const lowerMessage = message.toLowerCase();
-    
-    // Determine question type
     const questionType = this.classifyQuestionType(message);
-    
-    // Extract entities (names, places, concepts)
     const entities = this.extractEntities(message);
-    
-    // Determine intent
     const intent = this.classifyIntent(message);
-    
-    // Extract all relevant topics (not just the first word)
     const topics = this.extractAllTopics(message);
-    
-    // Analyze sentiment
     const sentiment = this.analyzeSentiment(message);
+    
+    console.log("Analysis result:", { questionType, entities, intent, topics, sentiment });
     
     return {
       intent,
@@ -155,13 +185,13 @@ class IndicNLPEngine {
   }
 
   private generateContextualResponse(message: string, analysis: MessageAnalysis, documentContext: string[], language: string): string {
-    // Use the primary topic from analysis instead of just first word
-    const primaryTopic = analysis.topics[0] || 'dharma';
+    console.log("Generating contextual response for analysis:", analysis);
     
-    // Select template based on question type and intent
-    const templates = this.getTemplatesForContext(analysis, language);
-    const template = templates[Math.floor(Math.random() * templates.length)];
-    let response = template.replace('{topic}', primaryTopic);
+    // Use the primary topic from analysis instead of just first word
+    const primaryTopic = analysis.topics[0] || "dharma";
+    
+    // Get contextual templates based on question type and intent
+    let response = this.getContextualTemplate(analysis, language, primaryTopic);
 
     // Add document-based context if available
     if (documentContext.length > 0) {
@@ -188,12 +218,131 @@ class IndicNLPEngine {
     return response;
   }
 
+  // Built-in contextual analysis methods
+  private classifyQuestionType(message: string): string {
+    const lowerMessage = message.toLowerCase();
+    
+    if (lowerMessage.includes("what") || lowerMessage.includes("क्या") || lowerMessage.includes("ఏమిటి") || lowerMessage.includes("ಏನು")) {
+      return "definition";
+    } else if (lowerMessage.includes("how") || lowerMessage.includes("कैसे") || lowerMessage.includes("ఎలా") || lowerMessage.includes("ಹೇಗೆ")) {
+      return "process";
+    } else if (lowerMessage.includes("why") || lowerMessage.includes("क्यों") || lowerMessage.includes("ఎందుకు") || lowerMessage.includes("ಯಾಕೆ")) {
+      return "explanation";
+    } else if (lowerMessage.includes("when") || lowerMessage.includes("कब") || lowerMessage.includes("ఎప్పుడు") || lowerMessage.includes("ಯಾವಾಗ")) {
+      return "timing";
+    } else if (lowerMessage.includes("where") || lowerMessage.includes("कहाँ") || lowerMessage.includes("ఎక్కడ") || lowerMessage.includes("ಎಲ್ಲಿ")) {
+      return "location";
+    }
+    return "general";
+  }
+
+  private extractEntities(message: string): string[] {
+    const entities: string[] = [];
+    const lowerMessage = message.toLowerCase();
+    
+    // Hindu deities, scriptures, concepts
+    const allEntities = [
+      "dharma", "karma", "yoga", "meditation", "puja", "mantra", "vedas", "upanishads",
+      "धर्म", "कर्म", "योग", "ध्यान", "पूजा", "मंत्र", "वेद", "उपनिषद्",
+      "krishna", "rama", "shiva", "vishnu", "कृष्ण", "राम", "शिव", "विष्णु"
+    ];
+    
+    for (const entity of allEntities) {
+      if (lowerMessage.includes(entity.toLowerCase())) {
+        entities.push(entity);
+      }
+    }
+    
+    return entities;
+  }
+
+  private classifyIntent(message: string): string {
+    const lowerMessage = message.toLowerCase();
+    
+    if (lowerMessage.includes("tell me") || lowerMessage.includes("explain") || lowerMessage.includes("बताइए")) {
+      return "information_seeking";
+    } else if (lowerMessage.includes("help") || lowerMessage.includes("guide") || lowerMessage.includes("मदद")) {
+      return "guidance_seeking";
+    } else if (lowerMessage.includes("ritual") || lowerMessage.includes("पूजा")) {
+      return "ritual_inquiry";
+    } else if (lowerMessage.includes("scripture") || lowerMessage.includes("शास्त्र")) {
+      return "scriptural_inquiry";
+    }
+    return "general_inquiry";
+  }
+
+  private extractAllTopics(message: string): string[] {
+    const topics: string[] = [];
+    const topicPatterns = [
+      { pattern: /dharma|धर्म|ధర్మం|ಧರ್ಮ/gi, topic: "dharma" },
+      { pattern: /karma|कर्म|కర్మ|ಕರ್ಮ/gi, topic: "karma" },
+      { pattern: /yoga|योग|యోగ|ಯೋಗ/gi, topic: "yoga" },
+      { pattern: /meditation|ध्यान/gi, topic: "meditation" },
+      { pattern: /puja|पूजा|పూజ|ಪೂಜೆ|worship/gi, topic: "puja" },
+      { pattern: /mantra|मंत्र/gi, topic: "mantra" },
+      { pattern: /vedas?|वेद/gi, topic: "vedas" },
+      { pattern: /upanishads?|उपनिषद्/gi, topic: "upanishads" }
+    ];
+    
+    for (const { pattern, topic } of topicPatterns) {
+      if (pattern.test(message) && !topics.includes(topic)) {
+        topics.push(topic);
+      }
+    }
+    
+    if (topics.length === 0) {
+      const words = message.split(/\s+/).filter(word => word.length > 3);
+      topics.push(words[0] || "dharma");
+    }
+    
+    return topics;
+  }
+
+  private analyzeSentiment(message: string): string {
+    const lowerMessage = message.toLowerCase();
+    const questionWords = ["what", "how", "why", "क्या", "कैसे", "क्यों"];
+    
+    if (questionWords.some(word => lowerMessage.includes(word))) {
+      return "inquisitive";
+    }
+    return "neutral";
+  }
+
+  private getContextualTemplate(analysis: MessageAnalysis, language: string, topic: string): string {
+    const langTemplates = this.contextualTemplates[language];
+    if (!langTemplates) {
+      const englishTemplates = this.contextualTemplates.english[analysis.questionType] || this.contextualTemplates.english.definition;
+      return englishTemplates[0].replace("{topic}", topic);
+    }
+    
+    const questionTemplates = langTemplates[analysis.questionType] || langTemplates.definition || langTemplates.general;
+    if (!questionTemplates) {
+      return `${topic} के बारे में विस्तार से जानकारी उपलब्ध है।`;
+    }
+    
+    const template = questionTemplates[Math.floor(Math.random() * questionTemplates.length)];
+    return template.replace("{topic}", topic);
+  }
+
+  private getRitualContext(language: string): string {
+    const ritualContexts: Record<string, string> = {
+      hindi: " वैदिक परंपरा में अनुष्ठानों का विशेष महत्व है और इन्हें शुद्ध मन से करना चाहिए।",
+      english: " In Vedic tradition, rituals hold special significance and should be performed with a pure mind."
+    };
+    return ritualContexts[language] || ritualContexts.english;
+  }
+
+  private getScriptureContext(language: string): string {
+    const scriptureContexts: Record<string, string> = {
+      hindi: " हमारे शास्त्र ज्ञान और आचार दोनों का स्रोत हैं और इनका अध्ययन गुरु मार्गदर्शन में करना चाहिए।",
+      english: " Our scriptures are the source of both knowledge and conduct, and should be studied under proper guidance."
+    };
+    return scriptureContexts[language] || scriptureContexts.english;
+  }
+
   private getContextualAddition(language: string): string {
     const additions: Record<string, string> = {
       hindi: " आपके द्वारा अपलोड किए गए दस्तावेजों के आधार पर, ",
-      sanskrit: " भवता उपलब्धकृतेषु ग्रन्थेषु आधारितं, ",
-      telugu: " మీరు అప్‌లోడ్ చేసిన పత్రాల ఆధారంగా, ",
-      kannada: " ನೀವು ಅಪ್‌ಲೋಡ್ ಮಾಡಿದ ದಾಖಲೆಗಳ ಆಧಾರದ ಮೇಲೆ, ",
       english: " Based on the documents you've uploaded, "
     };
     return additions[language] || additions.english;
@@ -202,14 +351,10 @@ class IndicNLPEngine {
   private extractInsightFromContext(context: string[], language: string): string {
     if (context.length === 0) return '';
     
-    // Simple insight extraction - in a real implementation, this would be more sophisticated
     const firstContext = context[0].substring(0, 100);
     
     const insights: Record<string, string> = {
       hindi: ` मुझे लगता है कि "${firstContext}..." के संदर्भ में यह विषय और भी महत्वपूर्ण हो जाता है।`,
-      sanskrit: ` "${firstContext}..." इति विषये अधिकमहत्वं प्राप्नोति।`,
-      telugu: ` "${firstContext}..." అనే సందర్భంలో ఈ విषయం మరింత ప్రాముఖ్యత పొందుతుంది।`,
-      kannada: ` "${firstContext}..." ಎಂಬ ಸಂದರ್ಭದಲ್ಲಿ ಈ ವಿಷಯವು ಹೆಚ್ಚು ಪ್ರಾಮುಖ್ಯತೆಯನ್ನು ಪಡೆಯುತ್ತದೆ।`,
       english: ` In the context of "${firstContext}...", this topic becomes even more significant.`
     };
     
@@ -219,102 +364,14 @@ class IndicNLPEngine {
   private getPhilosophicalContext(language: string): string {
     const contexts: Record<string, string> = {
       hindi: " गहराई से विचार करें तो, यह विषय हमारे अस्तित्व और जीवन के उद्देश्य से जुड़ा हुआ है।",
-      sanskrit: " गम्भीरतया विचार्य, एषा विषयः अस्माकं अस्तित्वस्य जीवनलक्ष्यस्य च सह सम्बद्धः अस्ति।",
-      telugu: " లోతుగా ఆలోచిస్తే, ఈ విషయం మన ఉనికి మరియు జీవిత లక్ష్యంతో అనుసంధానించబడింది.",
-      kannada: " ಆಳವಾಗಿ ಯೋಚಿಸಿದರೆ, ಈ ವಿಷಯವು ನಮ್ಮ ಅಸ್ತಿತ್ವ ಮತ್ತು ಜೀವನದ ಉದ್ದೇಶದೊಂದಿಗೆ ಸಂಬಂಧ ಹೊಂದಿದೆ।",
       english: " When contemplated deeply, this topic connects to our very existence and life's purpose."
     };
     return contexts[language] || contexts.english;
   }
 
-  private extractTopic(message: string): string {
-    // This method is now deprecated in favor of extractAllTopics
-    // Keeping for backward compatibility
-    const analysis = this.extractAllTopics(message);
-    return analysis[0] || 'धर्म';
-  }
-
-  // Import helper methods
-  private classifyQuestionType = (message: string): string => {
-    try {
-      const { classifyQuestionType } = require('./indicNLPHelpers');
-      return classifyQuestionType(message);
-    } catch {
-      return 'general';
-    }
-  }
-
-  private extractEntities = (message: string): string[] => {
-    try {
-      const { extractEntities } = require('./indicNLPHelpers');
-      return extractEntities(message);
-    } catch {
-      return [];
-    }
-  }
-
-  private classifyIntent = (message: string): string => {
-    try {
-      const { classifyIntent } = require('./indicNLPHelpers');
-      return classifyIntent(message);
-    } catch {
-      return 'general_inquiry';
-    }
-  }
-
-  private extractAllTopics = (message: string): string[] => {
-    try {
-      const { extractAllTopics } = require('./indicNLPHelpers');
-      return extractAllTopics(message);
-    } catch {
-      return [this.extractTopicFallback(message)];
-    }
-  }
-
-  private analyzeSentiment = (message: string): string => {
-    try {
-      const { analyzeSentiment } = require('./indicNLPHelpers');
-      return analyzeSentiment(message);
-    } catch {
-      return 'neutral';
-    }
-  }
-
-  private getTemplatesForContext = (analysis: MessageAnalysis, language: string): string[] => {
-    try {
-      const { getTemplatesForContext } = require('./indicNLPHelpers');
-      return getTemplatesForContext(analysis, language);
-    } catch {
-      return this.indicTemplates[language] || this.indicTemplates.english;
-    }
-  }
-
-  private extractTopicFallback(message: string): string {
-    // Simple topic extraction - look for key dharma-related terms
-    const dharmaTerms = [
-      'dharma', 'karma', 'yoga', 'meditation', 'puja', 'mantra', 'vedas', 'upanishads',
-      'dharmic', 'spiritual', 'divine', 'sacred', 'ritual', 'tradition', 'sampradaya',
-      'dharma', 'कर्म', 'योग', 'ध्यान', 'पूजा', 'मंत्र', 'वेद', 'उपनिषद्',
-      'धर्म', 'आध्यात्म', 'दिव्य', 'पवित्र', 'संस्कार', 'परंपरा', 'संप्रदाय'
-    ];
-    
-    for (const term of dharmaTerms) {
-      if (message.toLowerCase().includes(term.toLowerCase())) {
-        return term;
-      }
-    }
-    
-    // If no specific term found, extract the first meaningful word
-    const words = message.trim().split(' ').filter(word => word.length > 3);
-    return words[0] || 'धर्म';
-  }
-
   private getFallbackResponse(language: string): string {
     const fallbacks: Record<string, string> = {
       hindi: "क्षमा करें, मैं वर्तमान में आपके प्रश्न का उत्तर नहीं दे सकता। कृपया अपना प्रश्न दोबारा पूछें।",
-      sanskrit: "क्षम्यताम्, अहं सम्प्रति भवतः प्रश्नस्य उत्तरं दातुं न शक्नोमि। कृपया पुनः पृच्छतु।",
-      telugu: "క్షమించండి, నేను ప్రస్తుతం మీ ప్రశ్నకు సమాధానం ఇవ్వలేకపోతున్నాను. దయచేసి మీ ప్రశ్నను మళ్లీ అడగండి।",
-      kannada: "ಕ್ಷಮಿಸಿ, ನಾನು ಪ್ರಸ್ತುತ ನಿಮ್ಮ ಪ್ರಶ್ನೆಗೆ ಉತ್ತರಿಸಲು ಸಾಧ್ಯವಾಗುತ್ತಿಲ್ಲ. ದಯವಿಟ್ಟು ನಿಮ್ಮ ಪ್ರಶ್ನೆಯನ್ನು ಮತ್ತೊಮ್ಮೆ ಕೇಳಿ।",
       english: "I apologize, but I'm currently unable to answer your question. Please try rephrasing your question."
     };
     
