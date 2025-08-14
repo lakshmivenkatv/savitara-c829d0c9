@@ -12,7 +12,7 @@ export const AuthPage = () => {
       <Card className="w-full max-w-md">
         <CardHeader className="text-center">
           <CardTitle className="text-2xl font-bold bg-gradient-to-r from-orange-600 to-orange-800 bg-clip-text text-transparent">
-            Veda Viveka
+            Savitara
           </CardTitle>
           <CardDescription>
             Connect with Hindu Dharma wisdom and Acharyas
