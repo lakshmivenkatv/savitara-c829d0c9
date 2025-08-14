@@ -204,32 +204,34 @@ class IndicNLPEngine {
 
   private generateContextualResponse(message: string, analysis: MessageAnalysis, documentContext: string[], language: string): string {
     console.log("Generating response for analysis:", analysis);
+    console.log("Document context available:", documentContext.length, "chunks");
     
-    // FIRST PRIORITY: Check for direct answers in uploaded documents
+    // If we have document context, try to use it more intelligently
     if (documentContext.length > 0) {
-      console.log("Checking for direct answer in documents...");
+      console.log("Document context found, generating contextual response...");
+      
+      // First try direct answer extraction
       const directAnswer = this.extractDirectAnswer(message, documentContext, language);
-      if (directAnswer) {
-        console.log("Found direct answer, returning immediately:", directAnswer);
+      if (directAnswer && directAnswer.length > 20) {
+        console.log("Found substantial direct answer:", directAnswer.substring(0, 100) + "...");
         return directAnswer;
       }
-      console.log("No direct answer found, proceeding with templates");
+      
+      // If no direct answer, try to synthesize from document context
+      const synthesizedAnswer = this.synthesizeFromDocuments(message, documentContext, language);
+      if (synthesizedAnswer && synthesizedAnswer.length > 20) {
+        console.log("Synthesized answer from documents:", synthesizedAnswer.substring(0, 100) + "...");
+        return synthesizedAnswer;
+      }
+      
+      console.log("Document context not relevant, falling back to templates");
     }
 
-    // SECOND PRIORITY: Use contextual templates only if no direct answer
-    const primaryTopic = analysis.topics[0] || "dharma";
+    // Fallback to templates only when documents don't help
+    const primaryTopic = analysis.topics[0] || this.extractMainTopic(message);
     console.log("Using template for topic:", primaryTopic);
     
-    let response = this.getContextualTemplate(analysis, language, primaryTopic);
-
-    // Add minimal context for domain-specific queries
-    if (message.toLowerCase().includes('ritual') || message.toLowerCase().includes('पूजा')) {
-      response += this.getRitualContext(language);
-    } else if (message.toLowerCase().includes('scripture') || message.toLowerCase().includes('वेद')) {
-      response += this.getScriptureContext(language);
-    }
-
-    return response;
+    return this.getContextualTemplate(analysis, language, primaryTopic);
   }
 
   // Built-in contextual analysis methods
@@ -413,123 +415,157 @@ class IndicNLPEngine {
     return contexts[language] || contexts.english;
   }
 
-  // Direct answer extraction methods
+  // Enhanced direct answer extraction methods
   private extractDirectAnswer(question: string, documentContext: string[], language: string): string | null {
-    return this.extractDirectAnswerHelper(question, documentContext, language);
-  }
-
-  private extractDirectAnswerHelper(question: string, documentContext: string[], language: string): string | null {
-    console.log("Searching for direct answer in", documentContext.length, "document chunks");
+    console.log("Extracting direct answer for:", question);
     
     const lowerQuestion = question.toLowerCase();
     const questionWords = lowerQuestion.split(/\s+/).filter(word => word.length > 2);
     
     for (const context of documentContext) {
-      const lowerContext = context.toLowerCase();
+      // Try multiple extraction methods
+      let answer = this.extractFromKeyValue(question, context, questionWords);
+      if (answer) return answer;
       
-      // Look for JSON key-value pairs that match the question
-      if (context.includes(':')) {
-        const lines = context.split('\n');
-        for (const line of lines) {
-          if (line.includes(':')) {
-            const [key, value] = line.split(':').map(s => s.trim());
-            if (key && value && value.length > 3) {
-              // Check if any question word matches the key
-              const keyWords = key.toLowerCase().split(/\s+/);
-              const matchCount = questionWords.filter(qWord => 
-                keyWords.some(kWord => kWord.includes(qWord) || qWord.includes(kWord))
-              ).length;
-              
-              if (matchCount > 0) {
-                console.log("Found matching key-value:", key, "->", value);
-                return this.formatDirectAnswer(value, language);
-              }
-            }
-          }
-        }
-      }
+      answer = this.extractFromSentenceMatching(question, context, questionWords);
+      if (answer) return answer;
       
-      // Look for exact phrase matches
-      for (const word of questionWords) {
-        if (lowerContext.includes(word)) {
-          // Find sentences containing the keyword
-          const sentences = context.split(/[.!?]+/).filter(s => s.trim().length > 10);
-          for (const sentence of sentences) {
-            if (sentence.toLowerCase().includes(word) && sentence.trim().length > 20) {
-              console.log("Found matching sentence:", sentence.trim());
-              return this.formatDirectAnswer(sentence.trim(), language);
-            }
+      answer = this.extractFromSemanticSearch(question, context, questionWords);
+      if (answer) return answer;
+    }
+    
+    return null;
+  }
+
+  private extractFromKeyValue(question: string, context: string, questionWords: string[]): string | null {
+    if (!context.includes(':')) return null;
+    
+    const lines = context.split('\n');
+    for (const line of lines) {
+      if (line.includes(':')) {
+        const [key, value] = line.split(':').map(s => s.trim());
+        if (key && value && value.length > 10) {
+          const keyWords = key.toLowerCase().split(/\s+/);
+          const matchScore = questionWords.filter(qWord => 
+            keyWords.some(kWord => kWord.includes(qWord) || qWord.includes(kWord) || 
+                         this.areWordsSimilar(qWord, kWord))
+          ).length;
+          
+          if (matchScore >= Math.min(2, questionWords.length * 0.3)) {
+            console.log("Found key-value match:", key, "->", value);
+            return value.replace(/["\[\]{}]/g, '').trim();
           }
         }
       }
     }
-    
-    console.log("No direct answer found in documents");
     return null;
   }
 
-  private formatDirectAnswer(answer: string, language: string): string {
-    // Clean up the answer
-    const cleanAnswer = answer.replace(/^["\s]+|["\s]+$/g, '').trim();
+  private extractFromSentenceMatching(question: string, context: string, questionWords: string[]): string | null {
+    const sentences = context.split(/[.!?]+/).filter(s => s.trim().length > 20);
     
-    if (cleanAnswer.length < 3) return cleanAnswer;
-    
-    const prefixes: Record<string, string> = {
-      hindi: "आपके डॉक्यूमेंट के अनुसार: ",
-      english: "From your document: ",
-      sanskrit: "भवतः ग्रन्थे: ",
-      telugu: "మీ పత్రం నుండి: ",
-      kannada: "ನಿಮ್ಮ ದಾಖಲೆಯಿಂದ: "
-    };
-    
-    const prefix = prefixes[language] || prefixes.english;
-    return prefix + cleanAnswer;
+    for (const sentence of sentences) {
+      const lowerSentence = sentence.toLowerCase();
+      const matchCount = questionWords.filter(word => 
+        lowerSentence.includes(word) || lowerSentence.includes(word.substring(0, 4))
+      ).length;
+      
+      if (matchCount >= Math.min(2, questionWords.length * 0.4)) {
+        console.log("Found sentence match:", sentence.substring(0, 100));
+        return sentence.trim();
+      }
+    }
+    return null;
   }
 
-
-  private getRitualContext(language: string): string {
-    const ritualContexts: Record<string, string> = {
-      hindi: " वैदिक परंपरा में अनुष्ठानों का विशेष महत्व है और इन्हें शुद्ध मन से करना चाहिए।",
-      english: " In Vedic tradition, rituals hold special significance and should be performed with a pure mind."
-    };
-    return ritualContexts[language] || ritualContexts.english;
-  }
-
-  private getScriptureContext(language: string): string {
-    const scriptureContexts: Record<string, string> = {
-      hindi: " हमारे शास्त्र ज्ञान और आचार दोनों का स्रोत हैं और इनका अध्ययन गुरु मार्गदर्शन में करना चाहिए।",
-      english: " Our scriptures are the source of both knowledge and conduct, and should be studied under proper guidance."
-    };
-    return scriptureContexts[language] || scriptureContexts.english;
-  }
-
-  private getContextualAddition(language: string): string {
-    const additions: Record<string, string> = {
-      hindi: " आपके द्वारा अपलोड किए गए दस्तावेजों के आधार पर, ",
-      english: " Based on the documents you've uploaded, "
-    };
-    return additions[language] || additions.english;
-  }
-
-  private extractInsightFromContext(context: string[], language: string): string {
-    if (context.length === 0) return '';
+  private extractFromSemanticSearch(question: string, context: string, questionWords: string[]): string | null {
+    // Look for paragraphs or chunks that contain multiple question words
+    const chunks = context.split('\n\n').filter(chunk => chunk.trim().length > 30);
     
-    const firstContext = context[0].substring(0, 100);
-    
-    const insights: Record<string, string> = {
-      hindi: ` मुझे लगता है कि "${firstContext}..." के संदर्भ में यह विषय और भी महत्वपूर्ण हो जाता है।`,
-      english: ` In the context of "${firstContext}...", this topic becomes even more significant.`
-    };
-    
-    return insights[language] || insights.english;
+    for (const chunk of chunks) {
+      const lowerChunk = chunk.toLowerCase();
+      const relevanceScore = questionWords.reduce((score, word) => {
+        if (lowerChunk.includes(word)) return score + 2;
+        if (lowerChunk.includes(word.substring(0, Math.max(3, word.length - 2)))) return score + 1;
+        return score;
+      }, 0);
+      
+      if (relevanceScore >= 3) {
+        console.log("Found semantic match with score:", relevanceScore);
+        return chunk.trim();
+      }
+    }
+    return null;
   }
 
-  private getPhilosophicalContext(language: string): string {
-    const contexts: Record<string, string> = {
-      hindi: " गहराई से विचार करें तो, यह विषय हमारे अस्तित्व और जीवन के उद्देश्य से जुड़ा हुआ है।",
-      english: " When contemplated deeply, this topic connects to our very existence and life's purpose."
+  private synthesizeFromDocuments(question: string, documentContext: string[], language: string): string | null {
+    console.log("Synthesizing answer from documents");
+    
+    const allRelevantText = documentContext.join('\n');
+    const questionWords = question.toLowerCase().split(/\s+/).filter(w => w.length > 2);
+    
+    // Find the most relevant sentences/paragraphs
+    const relevantParts: string[] = [];
+    const sentences = allRelevantText.split(/[.!?]+/).filter(s => s.trim().length > 15);
+    
+    for (const sentence of sentences) {
+      const lowerSentence = sentence.toLowerCase();
+      const matches = questionWords.filter(word => lowerSentence.includes(word)).length;
+      
+      if (matches >= 1 && sentence.trim().length > 20) {
+        relevantParts.push(sentence.trim());
+      }
+    }
+    
+    if (relevantParts.length > 0) {
+      // Take the most relevant parts and combine them
+      const answer = relevantParts.slice(0, 3).join('. ').replace(/\s+/g, ' ').trim();
+      if (answer.length > 30) {
+        console.log("Synthesized comprehensive answer");
+        return answer;
+      }
+    }
+    
+    return null;
+  }
+
+  private areWordsSimilar(word1: string, word2: string): boolean {
+    if (word1.length < 3 || word2.length < 3) return false;
+    
+    const shorter = word1.length < word2.length ? word1 : word2;
+    const longer = word1.length >= word2.length ? word1 : word2;
+    
+    return longer.includes(shorter.substring(0, Math.max(3, shorter.length - 1)));
+  }
+
+  private extractMainTopic(message: string): string {
+    const lowerMessage = message.toLowerCase();
+    
+    // Enhanced topic extraction
+    const topicKeywords = {
+      meditation: ['meditation', 'dhyana', 'ध्यान', 'ध्यान', 'meditate'],
+      prayer: ['prayer', 'pray', 'प्रार्थना', 'पूजा', 'worship'],
+      scripture: ['scripture', 'veda', 'वेद', 'shastra', 'शास्त्र', 'gita'],
+      festival: ['festival', 'celebration', 'त्योहार', 'उत्सव'],
+      ritual: ['ritual', 'ceremony', 'संस्कार', 'कर्म'],
+      philosophy: ['philosophy', 'darshan', 'दर्शन', 'truth', 'सत्य']
     };
-    return contexts[language] || contexts.english;
+    
+    for (const [topic, keywords] of Object.entries(topicKeywords)) {
+      if (keywords.some(keyword => lowerMessage.includes(keyword))) {
+        return topic;
+      }
+    }
+    
+    // Extract any capitalized words or nouns
+    const words = message.split(/\s+/);
+    for (const word of words) {
+      if (word.length > 3 && (word[0] === word[0].toUpperCase() || word.length > 6)) {
+        return word.toLowerCase();
+      }
+    }
+    
+    return "dharma";
   }
 
   private getFallbackResponse(language: string): string {
