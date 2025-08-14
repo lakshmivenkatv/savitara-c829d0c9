@@ -92,8 +92,29 @@ export default function AcharyaSearch() {
   const startConversation = async (acharyaId: string) => {
     try {
       const { data: { user } } = await supabase.auth.getUser();
-      if (!user) return;
+      if (!user) {
+        toast({
+          title: "Error", 
+          description: "Please login to start a conversation",
+          variant: "destructive",
+        });
+        return;
+      }
 
+      // Check if conversation already exists
+      const { data: existingConversation } = await supabase
+        .from('conversations')
+        .select('id')
+        .eq('grihasta_id', user.id)
+        .eq('acharya_id', acharyaId)
+        .single();
+
+      if (existingConversation) {
+        navigate(`/chat/${existingConversation.id}`);
+        return;
+      }
+
+      // Create new conversation
       const { data, error } = await supabase
         .from('conversations')
         .insert([{
@@ -108,6 +129,7 @@ export default function AcharyaSearch() {
 
       navigate(`/chat/${data.id}`);
     } catch (error: any) {
+      console.error('Error starting conversation:', error);
       toast({
         title: "Error",
         description: "Failed to start conversation",
