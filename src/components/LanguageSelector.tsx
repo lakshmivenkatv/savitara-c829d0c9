@@ -8,6 +8,7 @@ interface LanguageSelectorProps {
 const languages = [
   { value: 'english', label: 'English', nativeLabel: 'English' },
   { value: 'hindi', label: 'Hindi', nativeLabel: 'हिन्दी' },
+  { value: 'marathi', label: 'Marathi', nativeLabel: 'मराठी' },
   { value: 'sanskrit', label: 'Sanskrit', nativeLabel: 'संस्कृतम्' },
   { value: 'telugu', label: 'Telugu', nativeLabel: 'తెలుగు' },
   { value: 'kannada', label: 'Kannada', nativeLabel: 'ಕನ್ನಡ' },

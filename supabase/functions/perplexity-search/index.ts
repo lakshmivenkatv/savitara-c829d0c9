@@ -36,6 +36,7 @@ serve(async (req) => {
     // Create language-specific system prompt
     const systemPrompts: Record<string, string> = {
       hindi: "आपको हिंदू धर्म, दर्शन, और आध्यात्म के विषयों में विशेषज्ञता है। सटीक और संक्षिप्त उत्तर दें। हिंदी में उत्तर दें।",
+      marathi: "तुम्ही हिंदू धर्म, तत्त्वज्ञान आणि अध्यात्म या विषयांमध्ये तज्ञ आहात। अचूक आणि संक्षिप्त उत्तर द्या। मराठीत उत्तर द्या।",
       english: "You are an expert in Hindu dharma, philosophy, and spirituality. Provide accurate and concise answers about spiritual and religious topics.",
       sanskrit: "त्वं हिन्दुधर्मे दर्शने च आध्यात्मे च विशेषज्ञः असि। सटीकं संक्षिप्तं च उत्तरं ददातु।",
       telugu: "మీరు హిందూ ధర్మం, తత్వశాస్త్రం మరియు ఆధ్యాత్మికతలో నిపుణులు. ఆధ్యాత్మిక మరియు మతపరమైన అంశాలపై ఖచ్చితమైన మరియు సంక్షిప్త సమాధానాలు అందించండి.",

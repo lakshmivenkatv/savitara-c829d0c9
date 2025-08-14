@@ -48,6 +48,32 @@ class IndicNLPEngine {
           "वैदिक परंपरा में {topic} का महत्वपूर्ण स्थान है।"
         ]
       },
+      marathi: {
+        definition: [
+          "{topic} चा अर्थ आणि व्याख्या समजून घेतल्यास हे आध्यात्मिक जीवनाचा पाया आहे।",
+          "वैदिक तत्त्वज्ञानात {topic} चे स्पष्ट वर्णन मिळते जे जीवनाला दिशा देते।",
+          "{topic} चे मूलभूत घटक समजून घेणे आत्म-साक्षात्काराकडे पहिले पाऊल आहे।"
+        ],
+        process: [
+          "{topic} चा सराव करण्याची पद्धत शास्त्रांत तपशीलवार सांगितली आहे।",
+          "गुरु परंपरेनुसार {topic} अशा प्रकारे स्वीकारावे।",
+          "{topic} च्या साधनेत धैर्य आणि सातत्य हे सर्वात महत्त्वाचे आहे।"
+        ],
+        explanation: [
+          "{topic} मागे असलेले खोल तत्त्वज्ञान असे आहे की सर्व काही परस्परांशी जोडलेले आहे।",
+          "आपल्या ऋषी-मुनींनी {topic} द्वारे जीवनाचे सत्य समजावले आहे।",
+          "{topic} हे केवळ सिद्धांत नाही तर जगण्याची पद्धत आहे।"
+        ],
+        calendar: [
+          "आजचे {topic} जाणून घेण्यासाठी पंचांगाचा अभ्यास आवश्यक आहे। सध्या अचूक {topic} च्या गणनेसाठी स्थान आणि वेळेची माहिती आवश्यक आहे।",
+          "{topic} हा हिंदू कॅलेंडरचा महत्त्वाचा भाग आहे. हे चांद्र गणनेवर आधारित आहे आणि दैनंदिन जीवनात याचे विशेष महत्त्व आहे।",
+          "वैदिक ज्योतिषानुसार {topic} चे ज्ञान शुभ कार्यांसाठी अत्यंत महत्त्वाचे आहे।"
+        ],
+        general: [
+          "{topic} विषयी शास्त्रांमध्ये खोल ज्ञान मिळते।",
+          "वैदिक परंपरेत {topic} चे महत्त्वाचे स्थान आहे।"
+        ]
+      },
       sanskrit: {
         definition: [
           "{topic} विषये वेदेषु स्पष्टं विवरणं प्राप्यते।",
@@ -226,15 +252,15 @@ class IndicNLPEngine {
   private classifyQuestionType(message: string): string {
     const lowerMessage = message.toLowerCase();
     
-    if (lowerMessage.includes("what") || lowerMessage.includes("क्या") || lowerMessage.includes("ఏమిటి") || lowerMessage.includes("ಏನು")) {
+    if (lowerMessage.includes("what") || lowerMessage.includes("क्या") || lowerMessage.includes("काय") || lowerMessage.includes("ఏమిటి") || lowerMessage.includes("ಏನು")) {
       return "definition";
-    } else if (lowerMessage.includes("how") || lowerMessage.includes("कैसे") || lowerMessage.includes("ఎలా") || lowerMessage.includes("ಹೇಗೆ")) {
+    } else if (lowerMessage.includes("how") || lowerMessage.includes("कैसे") || lowerMessage.includes("कसे") || lowerMessage.includes("ఎలా") || lowerMessage.includes("ಹೇಗೆ")) {
       return "process";
-    } else if (lowerMessage.includes("why") || lowerMessage.includes("क्यों") || lowerMessage.includes("ఎందుకు") || lowerMessage.includes("ಯಾಕೆ")) {
+    } else if (lowerMessage.includes("why") || lowerMessage.includes("क्यों") || lowerMessage.includes("का") || lowerMessage.includes("ఎందుకు") || lowerMessage.includes("ಯಾಕೆ")) {
       return "explanation";
-    } else if (lowerMessage.includes("when") || lowerMessage.includes("कब") || lowerMessage.includes("ఎప్పుడు") || lowerMessage.includes("ಯಾವಾಗ")) {
+    } else if (lowerMessage.includes("when") || lowerMessage.includes("कब") || lowerMessage.includes("केव्हा") || lowerMessage.includes("ఎప్పుడు") || lowerMessage.includes("ಯಾವಾಗ")) {
       return "timing";
-    } else if (lowerMessage.includes("where") || lowerMessage.includes("कहाँ") || lowerMessage.includes("ఎక్కడ") || lowerMessage.includes("ಎಲ್ಲಿ")) {
+    } else if (lowerMessage.includes("where") || lowerMessage.includes("कहाँ") || lowerMessage.includes("कुठे") || lowerMessage.includes("ఎక్కడ") || lowerMessage.includes("ಎಲ್ಲಿ")) {
       return "location";
     }
     return "general";
@@ -248,7 +274,8 @@ class IndicNLPEngine {
     const allEntities = [
       "dharma", "karma", "yoga", "meditation", "puja", "mantra", "vedas", "upanishads",
       "धर्म", "कर्म", "योग", "ध्यान", "पूजा", "मंत्र", "वेद", "उपनिषद्",
-      "krishna", "rama", "shiva", "vishnu", "कृष्ण", "राम", "शिव", "विष्णु"
+      "धर्म", "कर्म", "योग", "ध्यान", "पूजा", "मंत्र", "वेद", "उपनिषद्", // Marathi
+      "krishna", "rama", "shiva", "vishnu", "कृष्ण", "राम", "शिव", "विष्णु", "कृष्ण", "राम", "शिव", "विष्णु"
     ];
     
     for (const entity of allEntities) {
@@ -263,7 +290,7 @@ class IndicNLPEngine {
   private classifyIntent(message: string): string {
     const lowerMessage = message.toLowerCase();
     
-    if (lowerMessage.includes("tell me") || lowerMessage.includes("explain") || lowerMessage.includes("बताइए")) {
+    if (lowerMessage.includes("tell me") || lowerMessage.includes("explain") || lowerMessage.includes("बताइए") || lowerMessage.includes("सांगा") || lowerMessage.includes("explain")) {
       return "information_seeking";
     } else if (lowerMessage.includes("help") || lowerMessage.includes("guide") || lowerMessage.includes("मदद")) {
       return "guidance_seeking";
@@ -359,7 +386,9 @@ class IndicNLPEngine {
       console.log("No templates found for question type, using fallback");
       return language === 'hindi' 
         ? "आपके प्रश्न के बारे में विस्तार से जानकारी उपलब्ध है। कृपया और स्पष्ट करें।"
-        : "I understand your spiritual inquiry. Could you please be more specific?";
+        : language === 'marathi'
+          ? "तुमच्या प्रश्नाबद्दल तपशीलवार माहिती उपलब्ध आहे. कृपया अधिक स्पष्ट करा."
+          : "I understand your spiritual inquiry. Could you please be more specific?";
     }
     
     const template = questionTemplates[Math.floor(Math.random() * questionTemplates.length)];
@@ -540,6 +569,7 @@ class IndicNLPEngine {
   private getNoAnswerResponse(language: string): string {
     const responses: Record<string, string> = {
       hindi: "मुझे आपके प्रश्न का उत्तर अपलोड किए गए दस्तावेजों में नहीं मिला। कृपया अधिक विशिष्ट प्रश्न पूछें या संबंधित दस्तावेज अपलोड करें।",
+      marathi: "मला तुमच्या प्रश्नाचे उत्तर अपलोड केलेल्या कागदपत्रांमध्ये सापडले नाही. कृपया अधिक विशिष्ट प्रश्न विचारा किंवा संबंधित दस्तऐवज अपलोड करा.",
       english: "I couldn't find an answer to your question in the uploaded documents. Please ask a more specific question or upload relevant documents.",
       sanskrit: "भवतः प्रश्नस्य उत्तरं प्रदत्तग्रन्थेषु न प्राप्तम्। कृपया अधिकं स्पष्टं प्रश्नं पृच्छतु।",
       telugu: "అప్‌లోడ్ చేసిన పత్రాలలో మీ ప్రశ్నకు సమాధానం కనుగొనలేకపోయాను. దయచేసి మరింత నిర్దిష్టమైన ప్రశ్న అడగండి.",
@@ -552,6 +582,7 @@ class IndicNLPEngine {
   private getFallbackResponse(language: string): string {
     const fallbacks: Record<string, string> = {
       hindi: "तकनीकी त्रुटि हुई है। कृपया फिर से प्रयास करें।",
+      marathi: "तांत्रिक त्रुटी झाली आहे. कृपया पुन्हा प्रयत्न करा.",
       english: "A technical error occurred. Please try again."
     };
     
