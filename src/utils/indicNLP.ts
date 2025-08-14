@@ -171,7 +171,7 @@ class IndicNLPEngine {
       
       const { documentProcessor } = await import('./documentProcessor');
       
-      // First check if we have any documents uploaded
+      // Check if we have any documents uploaded
       const documentStats = documentProcessor.getDocumentStats();
       console.log("Document stats:", documentStats);
       
@@ -190,12 +190,8 @@ class IndicNLPEngine {
         }
       }
       
-      // If no documents or no relevant context, analyze message for template response
-      console.log("No relevant documents found, using template response");
-      const analysis = await this.analyzeMessage(message, config.language);
-      const primaryTopic = analysis.topics[0] || this.extractMainTopic(message);
-      
-      return this.getContextualTemplate(analysis, config.language, primaryTopic);
+      // No documents or no relevant content found
+      return this.getNoAnswerResponse(config.language);
       
     } catch (error) {
       console.error("Error generating response with Indic NLP:", error);
@@ -513,10 +509,22 @@ class IndicNLPEngine {
     return "dharma";
   }
 
+  private getNoAnswerResponse(language: string): string {
+    const responses: Record<string, string> = {
+      hindi: "मुझे आपके प्रश्न का उत्तर अपलोड किए गए दस्तावेजों में नहीं मिला। कृपया अधिक विशिष्ट प्रश्न पूछें या संबंधित दस्तावेज अपलोड करें।",
+      english: "I couldn't find an answer to your question in the uploaded documents. Please ask a more specific question or upload relevant documents.",
+      sanskrit: "भवतः प्रश्नस्य उत्तरं प्रदत्तग्रन्थेषु न प्राप्तम्। कृपया अधिकं स्पष्टं प्रश्नं पृच्छतु।",
+      telugu: "అప్‌లోడ్ చేసిన పత్రాలలో మీ ప్రశ్నకు సమాధానం కనుగొనలేకపోయాను. దయచేసి మరింత నిర్దిష్టమైన ప్రశ్న అడగండి.",
+      kannada: "ಅಪ್‌ಲೋಡ್ ಮಾಡಿದ ದಾಖಲೆಗಳಲ್ಲಿ ನಿಮ್ಮ ಪ್ರಶ್ನೆಗೆ ಉತ್ತರ ಸಿಗಲಿಲ್ಲ. ದಯವಿಟ್ಟು ಹೆಚ್ಚು ನಿರ್ದಿಷ್ಟ ಪ್ರಶ್ನೆ ಕೇಳಿ."
+    };
+    
+    return responses[language] || responses.english;
+  }
+
   private getFallbackResponse(language: string): string {
     const fallbacks: Record<string, string> = {
-      hindi: "क्षमा करें, मैं वर्तमान में आपके प्रश्न का उत्तर नहीं दे सकता। कृपया अपना प्रश्न दोबारा पूछें।",
-      english: "I apologize, but I'm currently unable to answer your question. Please try rephrasing your question."
+      hindi: "तकनीकी त्रुटि हुई है। कृपया फिर से प्रयास करें।",
+      english: "A technical error occurred. Please try again."
     };
     
     return fallbacks[language] || fallbacks.english;
