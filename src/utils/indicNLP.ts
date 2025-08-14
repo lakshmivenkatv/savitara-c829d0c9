@@ -459,7 +459,25 @@ class IndicNLPEngine {
     let allMatches: string[] = [];
     
     for (const context of documentContext) {
-      // Check for key-value pairs first (JSON data)
+      // First, look for "answer:" entries directly
+      if (context.includes('answer:')) {
+        const lines = context.split('\n');
+        for (const line of lines) {
+          if (line.trim().startsWith('answer:')) {
+            const answer = line.replace('answer:', '').trim();
+            if (answer.length > 10 && !answer.toLowerCase().includes('question')) {
+              console.log("Found direct answer:", answer.substring(0, 50));
+              allMatches.push(answer);
+              if (answer.length > bestMatch.length) {
+                bestMatch = answer;
+                bestScore = 100; // High score for direct answers
+              }
+            }
+          }
+        }
+      }
+      
+      // Check for key-value pairs (JSON data)
       if (context.includes(':')) {
         const lines = context.split('\n');
         for (const line of lines) {
@@ -473,8 +491,9 @@ class IndicNLPEngine {
                   value.toLowerCase().startsWith('how') ||
                   value.toLowerCase().startsWith('why') ||
                   value.toLowerCase().startsWith('when') ||
-                  value.toLowerCase().startsWith('where')) {
-                console.log("Skipping question entry:", key, "->", value.substring(0, 30));
+                  value.toLowerCase().startsWith('where') ||
+                  key.toLowerCase().includes('category')) {
+                console.log("Skipping question/category entry:", key, "->", value.substring(0, 30));
                 continue;
               }
               
