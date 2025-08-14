@@ -38,16 +38,43 @@ export default function Conversations() {
   const navigate = useNavigate();
 
   useEffect(() => {
-    fetchConversations();
+    initializeData();
   }, []);
 
-  const fetchConversations = async () => {
+  const initializeData = async () => {
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) return;
+
+    setCurrentUserId(user.id);
+    await fetchConversations(user.id);
+    
+    // Set up realtime subscription for new messages
+    const messagesChannel = supabase
+      .channel('conversations-realtime')
+      .on(
+        'postgres_changes',
+        {
+          event: 'INSERT',
+          schema: 'public',
+          table: 'messages'
+        },
+        async (payload) => {
+          console.log('New message detected:', payload);
+          // Refresh conversations when new messages are added
+          await fetchConversations(user.id);
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(messagesChannel);
+    };
+  };
+
+  const fetchConversations = async (userId: string) => {
     try {
-      const { data: { user } } = await supabase.auth.getUser();
-      if (!user) return;
-
-      setCurrentUserId(user.id);
-
+      setIsLoading(true);
+      
       // Fetch conversations where user is either grihasta or acharya
       const { data: conversationsData, error: conversationsError } = await supabase
         .from('conversations')
@@ -59,7 +86,7 @@ export default function Conversations() {
           grihasta_id,
           acharya_id
         `)
-        .or(`grihasta_id.eq.${user.id},acharya_id.eq.${user.id}`)
+        .or(`grihasta_id.eq.${userId},acharya_id.eq.${userId}`)
         .order('updated_at', { ascending: false });
 
       if (conversationsError) throw conversationsError;
