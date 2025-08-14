@@ -44,54 +44,88 @@ serve(async (req) => {
 
     const systemPrompt = systemPrompts[language] || systemPrompts.english;
 
-    const response = await fetch('https://api.perplexity.ai/chat/completions', {
-      method: 'POST',
-      headers: {
-        'Authorization': `Bearer ${PERPLEXITY_API_KEY}`,
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
-        model: 'llama-3.1-sonar-small-128k-chat',
-        messages: [
-          {
-            role: 'system',
-            content: systemPrompt
+    // Try different models in order of preference
+    const models = [
+      'llama-3.1-sonar-small-128k-online',
+      'llama-3.1-sonar-large-128k-online',
+      'sonar-small-online',
+      'sonar-medium-online',
+      'sonar'
+    ];
+
+    let lastError: string = '';
+    
+    for (const model of models) {
+      try {
+        console.log(`Trying model: ${model}`);
+        
+        const requestBody = {
+          model: model,
+          messages: [
+            {
+              role: 'system',
+              content: systemPrompt
+            },
+            {
+              role: 'user',
+              content: message
+            }
+          ],
+          temperature: 0.2,
+          max_tokens: 500
+        };
+
+        // Add online-specific parameters only for online models
+        if (model.includes('online')) {
+          Object.assign(requestBody, {
+            return_images: false,
+            return_related_questions: false,
+            search_recency_filter: 'month'
+          });
+        }
+
+        console.log('Request body:', JSON.stringify(requestBody, null, 2));
+
+        const response = await fetch('https://api.perplexity.ai/chat/completions', {
+          method: 'POST',
+          headers: {
+            'Authorization': `Bearer ${PERPLEXITY_API_KEY}`,
+            'Content-Type': 'application/json',
           },
-          {
-            role: 'user',
-            content: message
+          body: JSON.stringify(requestBody),
+        });
+
+        const responseText = await response.text();
+        console.log(`Response for model ${model}:`, response.status, responseText);
+
+        if (response.ok) {
+          const data = JSON.parse(responseText);
+          console.log('Perplexity response successful with model:', model);
+          
+          const answer = data.choices?.[0]?.message?.content;
+          if (!answer) {
+            throw new Error('No answer received from Perplexity');
           }
-        ],
-        temperature: 0.2,
-        top_p: 0.9,
-        max_tokens: 500,
-        return_images: false,
-        return_related_questions: false,
-        search_domain_filter: ['hinduism.stackexchange.com', 'sacred-texts.com', 'vedabase.io'],
-        search_recency_filter: 'month',
-        frequency_penalty: 1,
-        presence_penalty: 0
-      }),
-    });
 
-    if (!response.ok) {
-      const errorText = await response.text();
-      console.error('Perplexity API error:', response.status, errorText);
-      throw new Error(`Perplexity API error: ${response.status}`);
+          return new Response(
+            JSON.stringify({ answer }),
+            { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+          );
+        } else {
+          lastError = `${model}: ${response.status} - ${responseText}`;
+          console.log(`Model ${model} failed:`, lastError);
+          continue;
+        }
+      } catch (error) {
+        lastError = `${model}: ${error.message}`;
+        console.log(`Model ${model} error:`, error.message);
+        continue;
+      }
     }
 
-    const data = await response.json();
-    console.log('Perplexity response:', data);
-
-    const answer = data.choices?.[0]?.message?.content;
-    if (!answer) {
-      throw new Error('No answer received from Perplexity');
-    }
-
-    return new Response(
-      JSON.stringify({ answer }),
-      { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-    );
+    // If all models failed
+    console.error('All Perplexity models failed. Last error:', lastError);
+    throw new Error(`All Perplexity models failed. Last error: ${lastError}`);
 
   } catch (error) {
     console.error('Error in perplexity-search function:', error);
