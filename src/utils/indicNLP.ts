@@ -189,12 +189,23 @@ class IndicNLPEngine {
     
     // Use the primary topic from analysis instead of just first word
     const primaryTopic = analysis.topics[0] || "dharma";
+    console.log("Primary topic identified:", primaryTopic);
+    console.log("Question type:", analysis.questionType);
+    console.log("Intent:", analysis.intent);
     
     // Get contextual templates based on question type and intent
     let response = this.getContextualTemplate(analysis, language, primaryTopic);
+    console.log("Base response generated:", response);
+
+    // Add more context based on entities found
+    if (analysis.entities.length > 0) {
+      console.log("Entities found:", analysis.entities);
+      response += this.getEntityContext(analysis.entities, language);
+    }
 
     // Add document-based context if available
     if (documentContext.length > 0) {
+      console.log("Adding document context");
       const contextualInfo = this.getContextualAddition(language);
       response += contextualInfo;
       
@@ -309,19 +320,37 @@ class IndicNLPEngine {
   }
 
   private getContextualTemplate(analysis: MessageAnalysis, language: string, topic: string): string {
+    console.log(`Getting template for language: ${language}, questionType: ${analysis.questionType}, topic: ${topic}`);
+    
     const langTemplates = this.contextualTemplates[language];
     if (!langTemplates) {
+      console.log("Language not found, using English");
       const englishTemplates = this.contextualTemplates.english[analysis.questionType] || this.contextualTemplates.english.definition;
-      return englishTemplates[0].replace("{topic}", topic);
+      const selectedTemplate = englishTemplates[0].replace("{topic}", topic);
+      console.log("Selected English template:", selectedTemplate);
+      return selectedTemplate;
     }
     
     const questionTemplates = langTemplates[analysis.questionType] || langTemplates.definition || langTemplates.general;
     if (!questionTemplates) {
+      console.log("No templates found for question type, using fallback");
       return `${topic} के बारे में विस्तार से जानकारी उपलब्ध है।`;
     }
     
     const template = questionTemplates[Math.floor(Math.random() * questionTemplates.length)];
-    return template.replace("{topic}", topic);
+    const finalResponse = template.replace("{topic}", topic);
+    console.log("Final contextual response:", finalResponse);
+    return finalResponse;
+  }
+
+  private getEntityContext(entities: string[], language: string): string {
+    if (entities.length === 0) return "";
+    
+    const contexts: Record<string, string> = {
+      hindi: ` विशेष रूप से ${entities.join(", ")} के संदर्भ में यह और भी महत्वपूर्ण हो जाता है।`,
+      english: ` Particularly in the context of ${entities.join(", ")}, this becomes even more significant.`
+    };
+    return contexts[language] || contexts.english;
   }
 
   private getRitualContext(language: string): string {
