@@ -465,10 +465,14 @@ class IndicNLPEngine {
     for (let contextIndex = 0; contextIndex < documentContext.length; contextIndex++) {
       const context = documentContext[contextIndex];
       console.log(`=== PROCESSING CHUNK ${contextIndex + 1} ===`);
-      console.log("Context content:", context);
+      console.log("Full context content:");
+      console.log(context);
+      console.log("=== END CONTEXT ===");
       
       // Look for question-answer pairs in JSON format
       const lines = context.split('\n').map(line => line.trim()).filter(line => line.length > 0);
+      console.log("Lines found:", lines.length);
+      console.log("All lines:", lines);
       
       for (let i = 0; i < lines.length; i++) {
         const line = lines[i];
