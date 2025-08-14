@@ -389,13 +389,33 @@ class IndicNLPEngine {
   }
 
   private getTemplatesByIntent(langTemplates: Record<string, string[]>, analysis: MessageAnalysis): string[] {
-    // Check for calendar-specific queries first
+    console.log("Getting templates by intent:", analysis.intent, "Available template keys:", Object.keys(langTemplates));
+    
+    // Check for calendar-specific queries first (highest priority)
     if (analysis.intent === "calendar_inquiry" && langTemplates.calendar) {
+      console.log("Using calendar templates");
       return langTemplates.calendar;
     }
     
     // Then check question type
-    return langTemplates[analysis.questionType] || langTemplates.definition || langTemplates.general || [];
+    if (langTemplates[analysis.questionType]) {
+      console.log("Using question type templates:", analysis.questionType);
+      return langTemplates[analysis.questionType];
+    }
+    
+    // Fallback hierarchy
+    if (langTemplates.definition) {
+      console.log("Using definition templates as fallback");
+      return langTemplates.definition;
+    }
+    
+    if (langTemplates.general) {
+      console.log("Using general templates as fallback");
+      return langTemplates.general;
+    }
+    
+    console.log("No templates found, returning empty array");
+    return [];
   }
 
   private getEntityContext(entities: string[], language: string): string {
