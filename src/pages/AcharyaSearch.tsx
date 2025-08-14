@@ -99,6 +99,12 @@ export default function AcharyaSearch() {
 
   const filterAcharyas = () => {
     let filtered = acharyas;
+    console.log("Filtering acharyas:", {
+      totalAcharyas: acharyas.length,
+      searchTerm,
+      selectedLocation,
+      selectedSampradaya
+    });
 
     if (searchTerm) {
       filtered = filtered.filter(acharya =>
@@ -106,7 +112,8 @@ export default function AcharyaSearch() {
         acharya.specializations?.some(spec => 
           spec.toLowerCase().includes(searchTerm.toLowerCase())
         ) ||
-        acharya.bio_preview?.toLowerCase().includes(searchTerm.toLowerCase())
+        acharya.bio_preview?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        acharya.location?.toLowerCase().includes(searchTerm.toLowerCase())
       );
     }
 
@@ -115,11 +122,14 @@ export default function AcharyaSearch() {
     }
 
     if (selectedLocation) {
+      const beforeLocationFilter = filtered.length;
       filtered = filtered.filter(acharya => 
         acharya.location?.toLowerCase().includes(selectedLocation.toLowerCase())
       );
+      console.log(`Location filter "${selectedLocation}": ${beforeLocationFilter} -> ${filtered.length} acharyas`);
     }
 
+    console.log("Final filtered acharyas:", filtered.length);
     setFilteredAcharyas(filtered);
   };
 
@@ -312,9 +322,32 @@ export default function AcharyaSearch() {
         ))}
       </div>
 
-      {filteredAcharyas.length === 0 && (
+      {filteredAcharyas.length === 0 && !isLoading && (
         <div className="text-center py-12">
-          <p className="text-muted-foreground">No Acharyas found matching your criteria.</p>
+          <p className="text-muted-foreground mb-2">No Acharyas found matching your criteria.</p>
+          {selectedLocation && (
+            <p className="text-sm text-muted-foreground">
+              No acharyas found in "{selectedLocation}". Try a different location or browse all available acharyas.
+            </p>
+          )}
+          {acharyas.length > 0 && selectedLocation && (
+            <div className="mt-4">
+              <p className="text-sm font-medium mb-2">Available locations:</p>
+              <div className="flex flex-wrap justify-center gap-2">
+                {Array.from(new Set(acharyas.map(a => a.location).filter(Boolean))).map(location => (
+                  <Button
+                    key={location}
+                    variant="outline"
+                    size="sm"
+                    onClick={() => setSelectedLocation(location)}
+                    className="text-xs"
+                  >
+                    {location}
+                  </Button>
+                ))}
+              </div>
+            </div>
+          )}
         </div>
       )}
     </div>
