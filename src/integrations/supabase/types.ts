@@ -14,7 +14,131 @@ export type Database = {
   }
   public: {
     Tables: {
-      [_ in never]: never
+      conversations: {
+        Row: {
+          acharya_id: string
+          created_at: string
+          grihasta_id: string
+          id: string
+          title: string | null
+          updated_at: string
+        }
+        Insert: {
+          acharya_id: string
+          created_at?: string
+          grihasta_id: string
+          id?: string
+          title?: string | null
+          updated_at?: string
+        }
+        Update: {
+          acharya_id?: string
+          created_at?: string
+          grihasta_id?: string
+          id?: string
+          title?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "conversations_acharya_id_fkey"
+            columns: ["acharya_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["user_id"]
+          },
+          {
+            foreignKeyName: "conversations_grihasta_id_fkey"
+            columns: ["grihasta_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["user_id"]
+          },
+        ]
+      }
+      messages: {
+        Row: {
+          content: string
+          conversation_id: string
+          created_at: string
+          id: string
+          language: string | null
+          sender_id: string
+        }
+        Insert: {
+          content: string
+          conversation_id: string
+          created_at?: string
+          id?: string
+          language?: string | null
+          sender_id: string
+        }
+        Update: {
+          content?: string
+          conversation_id?: string
+          created_at?: string
+          id?: string
+          language?: string | null
+          sender_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "messages_conversation_id_fkey"
+            columns: ["conversation_id"]
+            isOneToOne: false
+            referencedRelation: "conversations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      profiles: {
+        Row: {
+          availability: boolean | null
+          bio: string | null
+          created_at: string
+          experience_years: number | null
+          full_name: string
+          id: string
+          languages: string[] | null
+          location: string | null
+          sampradaya: Database["public"]["Enums"]["sampradaya"]
+          specializations: string[] | null
+          updated_at: string
+          user_id: string
+          user_type: Database["public"]["Enums"]["user_type"]
+        }
+        Insert: {
+          availability?: boolean | null
+          bio?: string | null
+          created_at?: string
+          experience_years?: number | null
+          full_name: string
+          id?: string
+          languages?: string[] | null
+          location?: string | null
+          sampradaya: Database["public"]["Enums"]["sampradaya"]
+          specializations?: string[] | null
+          updated_at?: string
+          user_id: string
+          user_type: Database["public"]["Enums"]["user_type"]
+        }
+        Update: {
+          availability?: boolean | null
+          bio?: string | null
+          created_at?: string
+          experience_years?: number | null
+          full_name?: string
+          id?: string
+          languages?: string[] | null
+          location?: string | null
+          sampradaya?: Database["public"]["Enums"]["sampradaya"]
+          specializations?: string[] | null
+          updated_at?: string
+          user_id?: string
+          user_type?: Database["public"]["Enums"]["user_type"]
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
@@ -23,7 +147,8 @@ export type Database = {
       [_ in never]: never
     }
     Enums: {
-      [_ in never]: never
+      sampradaya: "madhva" | "vaishnava" | "smarta"
+      user_type: "acharya" | "grihasta"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -150,6 +275,9 @@ export type CompositeTypes<
 
 export const Constants = {
   public: {
-    Enums: {},
+    Enums: {
+      sampradaya: ["madhva", "vaishnava", "smarta"],
+      user_type: ["acharya", "grihasta"],
+    },
   },
 } as const
