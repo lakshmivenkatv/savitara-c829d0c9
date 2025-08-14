@@ -477,9 +477,12 @@ class IndicNLPEngine {
       for (let i = 0; i < lines.length; i++) {
         const line = lines[i];
         
-        // Found a question line
-        if (line.toLowerCase().includes('question:')) {
-          const questionText = line.replace(/.*question:\s*/i, '').trim();
+        // Look for the JSON structure pattern: "queries.json[X].question: ..." and "queries.json[X].answer: ..."
+        const questionMatch = line.match(/queries\.json\[\d+\]\.question:\s*(.+?)(?:\s*\.\s*queries\.json\[\d+\]\.answer:|$)/i);
+        const answerMatch = line.match(/queries\.json\[\d+\]\.answer:\s*(.+?)(?:\s*queries\.json\[\d+\]\.category:|$)/i);
+        
+        if (questionMatch) {
+          const questionText = questionMatch[1].trim();
           console.log(`Found question at line ${i}:`, questionText);
           
           // Calculate similarity between user question and found question
@@ -489,14 +492,26 @@ class IndicNLPEngine {
           if (questionScore > 0.3) { // Threshold for question similarity
             console.log("Good match! Looking for answer...");
             
-            // Look for the IMMEDIATE next answer (not in other chunks)
-            for (let j = i + 1; j < lines.length; j++) {
-              const answerLine = lines[j];
-              console.log(`Checking line ${j}:`, answerLine);
+            // Check if answer is on the same line
+            const sameLineAnswerMatch = line.match(/queries\.json\[\d+\]\.question:\s*.+?\s*queries\.json\[\d+\]\.answer:\s*(.+?)(?:\s*queries\.json\[\d+\]\.category:|$)/i);
+            if (sameLineAnswerMatch) {
+              const answer = sameLineAnswerMatch[1].trim();
+              console.log("*** FOUND MATCHING ANSWER ON SAME LINE ***:", answer);
               
-              if (answerLine.toLowerCase().includes('answer:')) {
-                const answer = answerLine.replace(/.*answer:\s*/i, '').trim();
-                if (answer.length > 0) {
+              if (questionScore > bestScore) {
+                bestScore = questionScore;
+                bestMatch = answer;
+                console.log("*** SET AS BEST MATCH ***");
+              }
+            } else {
+              // Look for answer on subsequent lines
+              for (let j = i + 1; j < lines.length; j++) {
+                const answerLine = lines[j];
+                console.log(`Checking line ${j}:`, answerLine);
+                
+                const nextAnswerMatch = answerLine.match(/queries\.json\[\d+\]\.answer:\s*(.+?)(?:\s*queries\.json\[\d+\]\.category:|$)/i);
+                if (nextAnswerMatch) {
+                  const answer = nextAnswerMatch[1].trim();
                   console.log("*** FOUND MATCHING ANSWER ***:", answer);
                   
                   if (questionScore > bestScore) {
@@ -506,12 +521,12 @@ class IndicNLPEngine {
                   }
                   break; // Found the answer for this question, stop looking
                 }
-              }
-              
-              // If we hit another question before finding an answer, stop
-              if (answerLine.toLowerCase().includes('question:')) {
-                console.log("Hit next question without finding answer, stopping");
-                break;
+                
+                // If we hit another question before finding an answer, stop
+                if (answerLine.match(/queries\.json\[\d+\]\.question:/i)) {
+                  console.log("Hit next question without finding answer, stopping");
+                  break;
+                }
               }
             }
           }
