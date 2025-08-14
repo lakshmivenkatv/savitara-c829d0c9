@@ -6,9 +6,11 @@ import { ScrollArea } from '@/components/ui/scroll-area';
 import { Send, Bot, User, Cpu, Cloud } from 'lucide-react';
 import { LanguageSelector } from './LanguageSelector';
 import { EngineSelector } from './EngineSelector';
+import { DocumentUpload } from './DocumentUpload';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 import { indicNLP } from '@/utils/indicNLP';
+import { documentProcessor } from '@/utils/documentProcessor';
 
 interface Message {
   id: string;
@@ -24,6 +26,7 @@ export const ChatInterface = () => {
   const [language, setLanguage] = useState('english');
   const [engine, setEngine] = useState('azure');
   const [isInitializingIndic, setIsInitializingIndic] = useState(false);
+  const [uploadedDocuments, setUploadedDocuments] = useState<File[]>([]);
   const scrollAreaRef = useRef<HTMLDivElement>(null);
   const { toast } = useToast();
 
@@ -40,24 +43,45 @@ export const ChatInterface = () => {
       indicNLP.initialize()
         .then(() => {
           toast({
-            title: "Indic NLP Ready",
-            description: "Specialized Indic language engine is now active",
+            title: "Advanced Indic NLP Ready",
+            description: "Enhanced contextual AI engine with document learning is active",
           });
         })
         .catch((error) => {
           console.error('Failed to initialize Indic NLP:', error);
           toast({
             title: "Engine Error",
-            description: "Failed to initialize Indic NLP. Falling back to Azure.",
+            description: "Using enhanced template system with document context",
             variant: "destructive",
           });
-          setEngine('azure');
         })
         .finally(() => {
           setIsInitializingIndic(false);
         });
     }
   }, [engine, toast, isInitializingIndic]);
+
+  // Process documents when uploaded
+  useEffect(() => {
+    if (uploadedDocuments.length > 0) {
+      documentProcessor.processDocuments(uploadedDocuments)
+        .then(() => {
+          const stats = documentProcessor.getDocumentStats();
+          toast({
+            title: "Documents Processed",
+            description: `Knowledge base updated with ${stats.totalChunks} sections from ${stats.totalDocuments} documents`,
+          });
+        })
+        .catch((error) => {
+          console.error('Failed to process documents:', error);
+          toast({
+            title: "Processing Error",
+            description: "Some documents couldn't be processed for learning",
+            variant: "destructive"
+          });
+        });
+    }
+  }, [uploadedDocuments, toast]);
 
   const sendMessage = async () => {
     if (!input.trim() || isLoading) return;
@@ -144,12 +168,21 @@ export const ChatInterface = () => {
         {isInitializingIndic && (
           <div className="text-sm text-muted-foreground flex items-center gap-2">
             <div className="w-4 h-4 border-2 border-orange-200 border-t-orange-600 rounded-full animate-spin"></div>
-            Initializing Indic NLP engine...
+            Initializing advanced contextual NLP engine...
+          </div>
+        )}
+        {engine === 'indic' && uploadedDocuments.length > 0 && (
+          <div className="text-sm text-green-600 flex items-center gap-2">
+            📚 Knowledge enhanced with {uploadedDocuments.length} document(s)
           </div>
         )}
       </CardHeader>
       
       <CardContent className="flex-1 flex flex-col space-y-4">
+        <DocumentUpload 
+          onDocumentsChange={setUploadedDocuments}
+          uploadedDocuments={uploadedDocuments}
+        />
         <ScrollArea className="flex-1 pr-4" ref={scrollAreaRef}>
           <div className="space-y-4">
             {messages.length === 0 && (

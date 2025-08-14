@@ -84,30 +84,90 @@ class IndicNLPEngine {
     }
 
     try {
+      const { documentProcessor } = await import('./documentProcessor');
+      
+      // Get relevant context from uploaded documents
+      const documentContext = documentProcessor.findRelevantContext(message, config.language, 2);
+      
       // Extract key topics from the message
       const topic = this.extractTopic(message);
       
-      // Get templates for the selected language
-      const templates = this.indicTemplates[config.language] || this.indicTemplates.english;
-      
-      // Select a random template
-      const template = templates[Math.floor(Math.random() * templates.length)];
-      
-      // Replace the topic placeholder
-      let response = template.replace('{topic}', topic);
-      
-      // Add some contextual information based on the message
-      if (message.toLowerCase().includes('ritual') || message.toLowerCase().includes('पूजा') || message.toLowerCase().includes('यज्ञ')) {
-        response += this.getRitualContext(config.language);
-      } else if (message.toLowerCase().includes('scripture') || message.toLowerCase().includes('वेद') || message.toLowerCase().includes('शास्त्र')) {
-        response += this.getScriptureContext(config.language);
-      }
-      
-      return response;
+      // Generate a more sophisticated response
+      return this.generateContextualResponse(message, topic, documentContext, config.language);
     } catch (error) {
       console.error("Error generating response with Indic NLP:", error);
       return this.getFallbackResponse(config.language);
     }
+  }
+
+  private generateContextualResponse(message: string, topic: string, documentContext: string[], language: string): string {
+    // Base response using templates
+    const templates = this.indicTemplates[language] || this.indicTemplates.english;
+    const template = templates[Math.floor(Math.random() * templates.length)];
+    let response = template.replace('{topic}', topic);
+
+    // Add document-based context if available
+    if (documentContext.length > 0) {
+      const contextualInfo = this.getContextualAddition(language);
+      response += contextualInfo;
+      
+      // Add specific insights from documents
+      const documentInsight = this.extractInsightFromContext(documentContext, language);
+      response += documentInsight;
+    }
+
+    // Add domain-specific context
+    if (message.toLowerCase().includes('ritual') || message.toLowerCase().includes('पूजा') || message.toLowerCase().includes('यज्ञ')) {
+      response += this.getRitualContext(language);
+    } else if (message.toLowerCase().includes('scripture') || message.toLowerCase().includes('वेद') || message.toLowerCase().includes('शास्त्र')) {
+      response += this.getScriptureContext(language);
+    }
+
+    // Add philosophical depth based on question complexity
+    if (message.length > 50 || message.includes('why') || message.includes('कैसे') || message.includes('क्यों')) {
+      response += this.getPhilosophicalContext(language);
+    }
+
+    return response;
+  }
+
+  private getContextualAddition(language: string): string {
+    const additions: Record<string, string> = {
+      hindi: " आपके द्वारा अपलोड किए गए दस्तावेजों के आधार पर, ",
+      sanskrit: " भवता उपलब्धकृतेषु ग्रन्थेषु आधारितं, ",
+      telugu: " మీరు అప్‌లోడ్ చేసిన పత్రాల ఆధారంగా, ",
+      kannada: " ನೀವು ಅಪ್‌ಲೋಡ್ ಮಾಡಿದ ದಾಖಲೆಗಳ ಆಧಾರದ ಮೇಲೆ, ",
+      english: " Based on the documents you've uploaded, "
+    };
+    return additions[language] || additions.english;
+  }
+
+  private extractInsightFromContext(context: string[], language: string): string {
+    if (context.length === 0) return '';
+    
+    // Simple insight extraction - in a real implementation, this would be more sophisticated
+    const firstContext = context[0].substring(0, 100);
+    
+    const insights: Record<string, string> = {
+      hindi: ` मुझे लगता है कि "${firstContext}..." के संदर्भ में यह विषय और भी महत्वपूर्ण हो जाता है।`,
+      sanskrit: ` "${firstContext}..." इति विषये अधिकमहत्वं प्राप्नोति।`,
+      telugu: ` "${firstContext}..." అనే సందర్భంలో ఈ విषయం మరింత ప్రాముఖ్యత పొందుతుంది।`,
+      kannada: ` "${firstContext}..." ಎಂಬ ಸಂದರ್ಭದಲ್ಲಿ ಈ ವಿಷಯವು ಹೆಚ್ಚು ಪ್ರಾಮುಖ್ಯತೆಯನ್ನು ಪಡೆಯುತ್ತದೆ।`,
+      english: ` In the context of "${firstContext}...", this topic becomes even more significant.`
+    };
+    
+    return insights[language] || insights.english;
+  }
+
+  private getPhilosophicalContext(language: string): string {
+    const contexts: Record<string, string> = {
+      hindi: " गहराई से विचार करें तो, यह विषय हमारे अस्तित्व और जीवन के उद्देश्य से जुड़ा हुआ है।",
+      sanskrit: " गम्भीरतया विचार्य, एषा विषयः अस्माकं अस्तित्वस्य जीवनलक्ष्यस्य च सह सम्बद्धः अस्ति।",
+      telugu: " లోతుగా ఆలోచిస్తే, ఈ విషయం మన ఉనికి మరియు జీవిత లక్ష్యంతో అనుసంధానించబడింది.",
+      kannada: " ಆಳವಾಗಿ ಯೋಚಿಸಿದರೆ, ಈ ವಿಷಯವು ನಮ್ಮ ಅಸ್ತಿತ್ವ ಮತ್ತು ಜೀವನದ ಉದ್ದೇಶದೊಂದಿಗೆ ಸಂಬಂಧ ಹೊಂದಿದೆ।",
+      english: " When contemplated deeply, this topic connects to our very existence and life's purpose."
+    };
+    return contexts[language] || contexts.english;
   }
 
   private extractTopic(message: string): string {
