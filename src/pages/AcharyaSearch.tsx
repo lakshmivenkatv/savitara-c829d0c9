@@ -26,7 +26,7 @@ export default function AcharyaSearch() {
   const [acharyas, setAcharyas] = useState<AcharyaPublicProfile[]>([]);
   const [filteredAcharyas, setFilteredAcharyas] = useState<AcharyaPublicProfile[]>([]);
   const [searchTerm, setSearchTerm] = useState('');
-  const [selectedSampradaya, setSelectedSampradaya] = useState('');
+  const [selectedSampradaya, setSelectedSampradaya] = useState('all');
   const [selectedLocation, setSelectedLocation] = useState('');
   const [isLoading, setIsLoading] = useState(true);
   const { toast } = useToast();
@@ -76,7 +76,7 @@ export default function AcharyaSearch() {
       );
     }
 
-    if (selectedSampradaya) {
+    if (selectedSampradaya && selectedSampradaya !== 'all') {
       filtered = filtered.filter(acharya => acharya.sampradaya === selectedSampradaya);
     }
 
@@ -170,7 +170,7 @@ export default function AcharyaSearch() {
               <SelectValue placeholder="Filter by Sampradaya" />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="">All Sampradayas</SelectItem>
+              <SelectItem value="all">All Sampradayas</SelectItem>
               <SelectItem value="madhva">Madhva</SelectItem>
               <SelectItem value="vaishnava">Vaishnava</SelectItem>
               <SelectItem value="smarta">Smarta</SelectItem>
