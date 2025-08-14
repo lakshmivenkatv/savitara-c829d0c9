@@ -451,8 +451,9 @@ class IndicNLPEngine {
 
   // Enhanced answer extraction from documents
   private findBestAnswer(question: string, documentContext: string[], language: string): string | null {
+    console.log("=== DOCUMENT SEARCH DEBUG ===");
     console.log("Looking for best answer in", documentContext.length, "chunks");
-    console.log("Question:", question);
+    console.log("User question:", question);
     
     const questionWords = question.toLowerCase().split(/\s+/).filter(w => w.length > 2);
     console.log("Question words:", questionWords);
@@ -461,8 +462,10 @@ class IndicNLPEngine {
     let bestScore = 0;
     
     // Try to find question-answer pairs in the JSON structure
-    for (const context of documentContext) {
-      console.log("Processing context chunk:", context.substring(0, 200));
+    for (let contextIndex = 0; contextIndex < documentContext.length; contextIndex++) {
+      const context = documentContext[contextIndex];
+      console.log(`=== PROCESSING CHUNK ${contextIndex + 1} ===`);
+      console.log("Context content:", context);
       
       // Look for question-answer pairs in JSON format
       const lines = context.split('\n').map(line => line.trim()).filter(line => line.length > 0);
