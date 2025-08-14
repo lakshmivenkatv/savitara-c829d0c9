@@ -2,7 +2,7 @@ import React, { useCallback } from 'react';
 import { useDropzone } from 'react-dropzone';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Upload, FileText, X } from 'lucide-react';
+import { Upload, FileText, X, FileSpreadsheet, FileJson } from 'lucide-react';
 import { useToast } from '@/components/ui/use-toast';
 
 interface DocumentUploadProps {
@@ -17,21 +17,29 @@ export const DocumentUpload: React.FC<DocumentUploadProps> = ({
   const { toast } = useToast();
 
   const onDrop = useCallback((acceptedFiles: File[]) => {
-    const pdfFiles = acceptedFiles.filter(file => file.type === 'application/pdf');
+    const supportedFiles = acceptedFiles.filter(file => 
+      file.type === 'application/pdf' || 
+      file.type === 'application/json' ||
+      file.type === 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' ||
+      file.type === 'application/vnd.ms-excel' ||
+      file.name.endsWith('.json') ||
+      file.name.endsWith('.xlsx') ||
+      file.name.endsWith('.xls')
+    );
     
-    if (pdfFiles.length !== acceptedFiles.length) {
+    if (supportedFiles.length !== acceptedFiles.length) {
       toast({
-        title: "Invalid files",
-        description: "Only PDF files are supported",
+        title: "Some files not supported",
+        description: "Only PDF, JSON, Excel (.xlsx, .xls) files are supported",
         variant: "destructive"
       });
     }
 
-    if (pdfFiles.length > 0) {
-      onDocumentsChange([...uploadedDocuments, ...pdfFiles]);
+    if (supportedFiles.length > 0) {
+      onDocumentsChange([...uploadedDocuments, ...supportedFiles]);
       toast({
         title: "Documents uploaded",
-        description: `${pdfFiles.length} PDF(s) uploaded successfully`,
+        description: `${supportedFiles.length} file(s) uploaded successfully`,
       });
     }
   }, [uploadedDocuments, onDocumentsChange, toast]);
@@ -39,7 +47,10 @@ export const DocumentUpload: React.FC<DocumentUploadProps> = ({
   const { getRootProps, getInputProps, isDragActive } = useDropzone({
     onDrop,
     accept: {
-      'application/pdf': ['.pdf']
+      'application/pdf': ['.pdf'],
+      'application/json': ['.json'],
+      'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet': ['.xlsx'],
+      'application/vnd.ms-excel': ['.xls']
     },
     multiple: true
   });
@@ -58,7 +69,7 @@ export const DocumentUpload: React.FC<DocumentUploadProps> = ({
       <CardHeader>
         <CardTitle className="flex items-center gap-2">
           <FileText className="w-5 h-5" />
-          Knowledge Base Documents
+          AI Knowledge Base Documents
         </CardTitle>
       </CardHeader>
       <CardContent className="space-y-4">
@@ -73,12 +84,12 @@ export const DocumentUpload: React.FC<DocumentUploadProps> = ({
           <input {...getInputProps()} />
           <Upload className="w-8 h-8 mx-auto mb-2 text-muted-foreground" />
           {isDragActive ? (
-            <p>Drop PDF files here...</p>
+            <p>Drop files here...</p>
           ) : (
             <div>
-              <p>Drag & drop PDF files here, or click to select</p>
+              <p>Drag & drop PDF, JSON, or Excel files here, or click to select</p>
               <p className="text-sm text-muted-foreground mt-1">
-                Upload PDFs to enhance the Indic NLP knowledge base
+                Upload documents to enhance the AI knowledge base with your data
               </p>
             </div>
           )}
@@ -93,7 +104,7 @@ export const DocumentUpload: React.FC<DocumentUploadProps> = ({
                 className="flex items-center justify-between p-2 bg-muted rounded-md"
               >
                 <div className="flex items-center gap-2">
-                  <FileText className="w-4 h-4" />
+                  {getFileIcon(file)}
                   <span className="text-sm">{file.name}</span>
                   <span className="text-xs text-muted-foreground">
                     ({(file.size / 1024 / 1024).toFixed(2)} MB)
@@ -113,4 +124,16 @@ export const DocumentUpload: React.FC<DocumentUploadProps> = ({
       </CardContent>
     </Card>
   );
+};
+
+// Helper function to get appropriate file icon
+const getFileIcon = (file: File) => {
+  if (file.type === 'application/pdf') {
+    return <FileText className="w-4 h-4" />;
+  } else if (file.type === 'application/json' || file.name.endsWith('.json')) {
+    return <FileJson className="w-4 h-4" />;
+  } else if (file.name.endsWith('.xlsx') || file.name.endsWith('.xls')) {
+    return <FileSpreadsheet className="w-4 h-4" />;
+  }
+  return <FileText className="w-4 h-4" />;
 };

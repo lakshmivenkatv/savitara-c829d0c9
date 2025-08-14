@@ -1,11 +1,15 @@
 import { pipeline } from '@huggingface/transformers';
+import * as XLSX from 'xlsx';
 
 interface DocumentChunk {
   text: string;
   embedding: number[];
   metadata: {
     filename: string;
+    fileType: 'pdf' | 'json' | 'excel';
     page?: number;
+    sheet?: string;
+    row?: number;
     chunkIndex: number;
   };
 }
@@ -52,7 +56,28 @@ class DocumentProcessor {
 
     for (const file of files) {
       try {
-        const text = await this.extractTextFromPDF(file);
+        console.log(`Processing file: ${file.name}, type: ${file.type}`);
+        
+        let text = '';
+        let fileType: 'pdf' | 'json' | 'excel' = 'pdf';
+        
+        // Determine file type and extract content
+        if (file.type === 'application/pdf') {
+          text = await this.extractTextFromPDF(file);
+          fileType = 'pdf';
+        } else if (file.type === 'application/json' || file.name.endsWith('.json')) {
+          text = await this.extractTextFromJSON(file);
+          fileType = 'json';
+        } else if (file.name.endsWith('.xlsx') || file.name.endsWith('.xls') || 
+                   file.type === 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' ||
+                   file.type === 'application/vnd.ms-excel') {
+          text = await this.extractTextFromExcel(file);
+          fileType = 'excel';
+        } else {
+          console.warn(`Unsupported file type: ${file.type}`);
+          continue;
+        }
+        
         const chunks = this.chunkText(text, 500); // 500 characters per chunk
         
         for (let i = 0; i < chunks.length; i++) {
@@ -73,6 +98,7 @@ class DocumentProcessor {
             embedding,
             metadata: {
               filename: file.name,
+              fileType,
               chunkIndex: i
             }
           });
@@ -86,16 +112,115 @@ class DocumentProcessor {
   }
 
   private async extractTextFromPDF(file: File): Promise<string> {
-    // Simple text extraction - in a real implementation, you'd use pdf-lib or similar
+    // Enhanced PDF extraction - in a real implementation, you'd use pdf-lib or similar
     return new Promise((resolve) => {
       const reader = new FileReader();
       reader.onload = () => {
         // This is a simplified extraction - real PDF parsing would be more complex
-        const text = `Content from ${file.name}\n\nThis is extracted text content that would normally come from PDF parsing. In a real implementation, this would use a proper PDF parsing library.`;
+        const text = `PDF Content from ${file.name}\n\nThis is extracted text content that would normally come from PDF parsing. In a real implementation, this would use a proper PDF parsing library like pdf-lib or pdf2pic.`;
         resolve(text);
       };
       reader.readAsText(file);
     });
+  }
+
+  // Direct implementation for JSON and Excel processing
+  private async extractTextFromJSON(file: File): Promise<string> {
+    return this.extractTextFromJSONHelper(file);
+  }
+
+  private async extractTextFromExcel(file: File): Promise<string> {
+    return this.extractTextFromExcelHelper(file);
+  }
+
+  private async extractTextFromJSONHelper(file: File): Promise<string> {
+    return new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.onload = () => {
+        try {
+          const jsonData = JSON.parse(reader.result as string);
+          const text = this.flattenJSONToText(jsonData, file.name);
+          resolve(text);
+        } catch (error) {
+          reject(new Error(`Failed to parse JSON: ${error}`));
+        }
+      };
+      reader.onerror = () => reject(new Error('Failed to read JSON file'));
+      reader.readAsText(file);
+    });
+  }
+
+  private async extractTextFromExcelHelper(file: File): Promise<string> {
+    return new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.onload = () => {
+        try {
+          const data = new Uint8Array(reader.result as ArrayBuffer);
+          const workbook = XLSX.read(data, { type: 'array' });
+          
+          let allText = `Excel file: ${file.name}\n\n`;
+          
+          workbook.SheetNames.forEach(sheetName => {
+            const worksheet = workbook.Sheets[sheetName];
+            const jsonData = XLSX.utils.sheet_to_json(worksheet, { header: 1 });
+            
+            allText += `Sheet: ${sheetName}\n`;
+            
+            jsonData.forEach((row: any[], rowIndex) => {
+              if (row.length > 0) {
+                const rowText = row.filter(cell => cell !== undefined && cell !== null).join(' | ');
+                if (rowText.trim()) {
+                  allText += `Row ${rowIndex + 1}: ${rowText}\n`;
+                }
+              }
+            });
+            
+            allText += '\n';
+          });
+          
+          resolve(allText);
+        } catch (error) {
+          reject(new Error(`Failed to parse Excel: ${error}`));
+        }
+      };
+      reader.onerror = () => reject(new Error('Failed to read Excel file'));
+      reader.readAsArrayBuffer(file);
+    });
+  }
+
+  private flattenJSONToText(obj: any, filename: string): string {
+    let text = `JSON file: ${filename}\n\n`;
+    
+    const flatten = (obj: any, currentPrefix = '') => {
+      let result = '';
+      
+      if (typeof obj === 'object' && obj !== null) {
+        if (Array.isArray(obj)) {
+          obj.forEach((item, index) => {
+            const newPrefix = currentPrefix ? `${currentPrefix}[${index}]` : `[${index}]`;
+            result += flatten(item, newPrefix);
+          });
+        } else {
+          Object.keys(obj).forEach(key => {
+            const newPrefix = currentPrefix ? `${currentPrefix}.${key}` : key;
+            const value = obj[key];
+            
+            if (typeof value === 'object' && value !== null) {
+              result += flatten(value, newPrefix);
+            } else {
+              result += `${newPrefix}: ${value}\n`;
+            }
+          });
+        }
+      } else {
+        result += `${currentPrefix}: ${obj}\n`;
+      }
+      
+      return result;
+    };
+    
+    text += flatten(obj);
+    return text;
   }
 
   private chunkText(text: string, maxLength: number): string[] {
