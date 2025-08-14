@@ -38,6 +38,11 @@ class IndicNLPEngine {
           "हमारे ऋषि-मुनियों ने {topic} के माध्यम से जीवन की सच्चाई को समझाया है।",
           "{topic} केवल सिद्धांत नहीं बल्कि जीने का तरीका है।"
         ],
+        calendar: [
+          "आज का {topic} जानने के लिए पंचांग का अध्ययन आवश्यक है। वर्तमान में सटीक {topic} की गणना के लिए स्थान और समय की जानकारी चाहिए।",
+          "{topic} हिंदू कैलेंडर का महत्वपूर्ण हिस्सा है। यह चंद्र गणना पर आधारित है और दैनिक जीवन में इसका विशेष महत्व है।",
+          "वैदिक ज्योतिष के अनुसार {topic} का ज्ञान शुभ कार्यों के लिए अत्यंत महत्वपूर्ण है।"
+        ],
         general: [
           "{topic} के बारे में शास्त्रों में गहन ज्ञान प्राप्त होता है।",
           "वैदिक परंपरा में {topic} का महत्वपूर्ण स्थान है।"
@@ -52,9 +57,9 @@ class IndicNLPEngine {
           "{topic} अभ्यासस्य विधिः शास्त्रेषु विस्तारेण वर्णितः।",
           "गुरुपरम्परया {topic} साधनं कर्तव्यम्।"
         ],
-        explanation: [
-          "{topic} तत्वं सर्वस्य परस्परसम्बन्धं दर्शयति।",
-          "{topic} केवलं सिद्धान्तो न अपितु जीवनपद्धतिः।"
+        calendar: [
+          "अद्य {topic} ज्ञानार्थं पञ्चाङ्गस्य अध्ययनम् आवश्यकम्।",
+          "{topic} चन्द्रगणनायाः आधारेण निर्धार्यते।"
         ]
       },
       telugu: {
@@ -69,6 +74,10 @@ class IndicNLPEngine {
         explanation: [
           "{topic} వెనుక ఉన్న లోతైన తత్వం అన్నీ పరస్పరం అనుసంధానించబడి ఉన్నాయి.",
           "{topic} కేవలం సిద్ధాంతం కాదు, జీవించే విధానం।"
+        ],
+        calendar: [
+          "నేటి {topic} తెలుసుకోవాలంటే పంచాంగం చూడాలి।",
+          "{topic} చంద్ర గణన ఆధారంగా నిర్ధారించబడుతుంది।"
         ]
       },
       kannada: {
@@ -83,6 +92,10 @@ class IndicNLPEngine {
         explanation: [
           "{topic} ಹಿಂದಿರುವ ಆಳವಾದ ತತ್ವ ಎಲ್ಲವೂ ಪರಸ್ಪರ ಸಂಬಂಧಿತವಾಗಿದೆ.",
           "{topic} ಕೇವಲ ಸಿದ್ಧಾಂತವಲ್ಲ, ಬದುಕುವ ವಿಧಾನ।"
+        ],
+        calendar: [
+          "ಇಂದಿನ {topic} ತಿಳಿಯಲು ಪಂಚಾಂಗ ನೋಡಬೇಕು।",
+          "{topic} ಚಂದ್ರ ಗಣನೆಯ ಆಧಾರದ ಮೇಲೆ ನಿರ್ಧರಿಸಲಾಗುತ್ತದೆ।"
         ]
       },
       english: {
@@ -100,6 +113,11 @@ class IndicNLPEngine {
           "The profound philosophy behind {topic} is that everything is interconnected.",
           "Our sages have explained life's truth through {topic}.",
           "{topic} is not merely a principle but a way of living."
+        ],
+        calendar: [
+          "To know today's {topic}, one needs to consult the Panchang (Hindu calendar). The accurate calculation requires location and time information.",
+          "{topic} is an important aspect of the Hindu lunar calendar system and holds special significance in daily spiritual practices.",
+          "According to Vedic astrology, knowledge of {topic} is essential for determining auspicious timings for various activities."
         ],
         general: [
           "The scriptures contain profound knowledge about {topic}.",
@@ -278,6 +296,8 @@ class IndicNLPEngine {
       return "ritual_inquiry";
     } else if (lowerMessage.includes("scripture") || lowerMessage.includes("शास्त्र")) {
       return "scriptural_inquiry";
+    } else if (lowerMessage.includes("today") || lowerMessage.includes("आज") || lowerMessage.includes("tithi") || lowerMessage.includes("panchang") || lowerMessage.includes("nakshatra")) {
+      return "calendar_inquiry";
     }
     return "general_inquiry";
   }
@@ -285,14 +305,39 @@ class IndicNLPEngine {
   private extractAllTopics(message: string): string[] {
     const topics: string[] = [];
     const topicPatterns = [
+      // Core dharmic concepts
       { pattern: /dharma|धर्म|ధర్మం|ಧರ್ಮ/gi, topic: "dharma" },
       { pattern: /karma|कर्म|కర్మ|ಕರ್ಮ/gi, topic: "karma" },
       { pattern: /yoga|योग|యోగ|ಯೋಗ/gi, topic: "yoga" },
-      { pattern: /meditation|ध्यान/gi, topic: "meditation" },
+      { pattern: /meditation|ध्यान|dhyana/gi, topic: "meditation" },
       { pattern: /puja|पूजा|పూజ|ಪೂಜೆ|worship/gi, topic: "puja" },
       { pattern: /mantra|मंत्र/gi, topic: "mantra" },
       { pattern: /vedas?|वेद/gi, topic: "vedas" },
-      { pattern: /upanishads?|उपनिषद्/gi, topic: "upanishads" }
+      { pattern: /upanishads?|उपनिषद्/gi, topic: "upanishads" },
+      
+      // Hindu calendar and astronomy
+      { pattern: /tithi|तिथि|తిథి|ತಿಥಿ/gi, topic: "tithi" },
+      { pattern: /nakshatra|नक्षत्र|నక్షత్రం|ನಕ್ಷತ್ರ/gi, topic: "nakshatra" },
+      { pattern: /panchang|पंचांग|పంచాంగం|ಪಂಚಾಂಗ/gi, topic: "panchang" },
+      { pattern: /rashifal|राशिफल|రాశిఫలం|ರಾಶಿಫಲ/gi, topic: "rashifal" },
+      { pattern: /graha|ग्रह|గ్రహ|ಗ್ರಹ|planet/gi, topic: "graha" },
+      { pattern: /muhurat|मुहूर्त|ముహూర్తం|ಮುಹೂರ್ತ/gi, topic: "muhurat" },
+      { pattern: /ekadashi|एकादशी|ఏకాదశి|ಏಕಾದಶಿ/gi, topic: "ekadashi" },
+      { pattern: /amavasya|अमावस्या|అమావస్య|ಅಮಾವಸ್ಯೆ/gi, topic: "amavasya" },
+      { pattern: /purnima|पूर्णिमा|పూర్ణిమ|ಪೂರ್ಣಿಮೆ/gi, topic: "purnima" },
+      
+      // Festivals and occasions
+      { pattern: /diwali|दिवाली|దీవాలి|ದೀಪಾವಳಿ/gi, topic: "diwali" },
+      { pattern: /holi|होली|హోళి|ಹೋಳಿ/gi, topic: "holi" },
+      { pattern: /navratri|नवरात्रि|నవరాత్రి|ನವರಾತ್ರಿ/gi, topic: "navratri" },
+      
+      // Deities
+      { pattern: /krishna|कृष्ण|కృష్ణ|ಕೃಷ್ಣ/gi, topic: "krishna" },
+      { pattern: /rama|राम|రామ|ರಾಮ/gi, topic: "rama" },
+      { pattern: /shiva|शिव|శివ|ಶಿವ/gi, topic: "shiva" },
+      { pattern: /vishnu|विष्णु|విష్ణు|ವಿಷ್ಣು/gi, topic: "vishnu" },
+      { pattern: /ganesh|गणेश|గణేశ|ಗಣೇಶ/gi, topic: "ganesh" },
+      { pattern: /hanuman|हनुमान|హనుమాన్|ಹನುಮಾನ್/gi, topic: "hanuman" }
     ];
     
     for (const { pattern, topic } of topicPatterns) {
@@ -320,18 +365,18 @@ class IndicNLPEngine {
   }
 
   private getContextualTemplate(analysis: MessageAnalysis, language: string, topic: string): string {
-    console.log(`Getting template for language: ${language}, questionType: ${analysis.questionType}, topic: ${topic}`);
+    console.log(`Getting template for language: ${language}, questionType: ${analysis.questionType}, topic: ${topic}, intent: ${analysis.intent}`);
     
     const langTemplates = this.contextualTemplates[language];
     if (!langTemplates) {
       console.log("Language not found, using English");
-      const englishTemplates = this.contextualTemplates.english[analysis.questionType] || this.contextualTemplates.english.definition;
+      const englishTemplates = this.getTemplatesByIntent(this.contextualTemplates.english, analysis);
       const selectedTemplate = englishTemplates[0].replace("{topic}", topic);
       console.log("Selected English template:", selectedTemplate);
       return selectedTemplate;
     }
     
-    const questionTemplates = langTemplates[analysis.questionType] || langTemplates.definition || langTemplates.general;
+    const questionTemplates = this.getTemplatesByIntent(langTemplates, analysis);
     if (!questionTemplates) {
       console.log("No templates found for question type, using fallback");
       return `${topic} के बारे में विस्तार से जानकारी उपलब्ध है।`;
@@ -341,6 +386,16 @@ class IndicNLPEngine {
     const finalResponse = template.replace("{topic}", topic);
     console.log("Final contextual response:", finalResponse);
     return finalResponse;
+  }
+
+  private getTemplatesByIntent(langTemplates: Record<string, string[]>, analysis: MessageAnalysis): string[] {
+    // Check for calendar-specific queries first
+    if (analysis.intent === "calendar_inquiry" && langTemplates.calendar) {
+      return langTemplates.calendar;
+    }
+    
+    // Then check question type
+    return langTemplates[analysis.questionType] || langTemplates.definition || langTemplates.general || [];
   }
 
   private getEntityContext(entities: string[], language: string): string {
