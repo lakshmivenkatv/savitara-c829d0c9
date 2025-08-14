@@ -245,6 +245,11 @@ class DocumentProcessor {
   }
 
   findRelevantContext(query: string, language: string, maxChunks: number = 5): string[] {
+    // First try to load from database if no chunks are available
+    if (this.documentChunks.length === 0) {
+      this.loadFromDatabase();
+    }
+
     if (this.documentChunks.length === 0) {
       return [];
     }
@@ -328,6 +333,37 @@ class DocumentProcessor {
 
   clearDocuments(): void {
     this.documentChunks = [];
+  }
+
+  async loadFromDatabase(): Promise<void> {
+    try {
+      const { supabase } = await import('@/integrations/supabase/client');
+      
+      const { data, error } = await supabase
+        .from('document_chunks')
+        .select('*')
+        .order('created_at', { ascending: false });
+
+      if (error) {
+        console.error('Failed to load chunks from database:', error);
+        return;
+      }
+
+      // Convert database chunks to our format
+      this.documentChunks = (data || []).map(dbChunk => ({
+        text: dbChunk.chunk_text,
+        embedding: [], // We're not using embeddings from DB yet
+        metadata: {
+          filename: (dbChunk.metadata as any)?.filename || 'Unknown',
+          fileType: (dbChunk.metadata as any)?.fileType || 'unknown',
+          chunkIndex: dbChunk.chunk_index
+        }
+      }));
+
+      console.log(`Loaded ${this.documentChunks.length} chunks from database`);
+    } catch (error) {
+      console.error('Error loading from database:', error);
+    }
   }
 }
 

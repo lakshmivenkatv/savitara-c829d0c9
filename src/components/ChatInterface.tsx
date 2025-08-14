@@ -1,4 +1,4 @@
-import { useState, useRef, useEffect } from 'react';
+import { useState, useRef, useEffect, useCallback } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -61,27 +61,12 @@ export const ChatInterface = () => {
     }
   }, [engine, toast, isInitializingIndic]);
 
-  // Process documents when uploaded
-  useEffect(() => {
-    if (uploadedDocuments.length > 0) {
-      documentProcessor.processDocuments(uploadedDocuments)
-        .then(() => {
-          const stats = documentProcessor.getDocumentStats();
-          toast({
-            title: "Documents Processed",
-            description: `Knowledge base updated with ${stats.totalChunks} sections from ${stats.totalDocuments} documents`,
-          });
-        })
-        .catch((error) => {
-          console.error('Failed to process documents:', error);
-          toast({
-            title: "Processing Error",
-            description: "Some documents couldn't be processed for learning",
-            variant: "destructive"
-          });
-        });
-    }
-  }, [uploadedDocuments, toast]);
+  // Handle document processing updates
+  const handleDocumentsProcessed = useCallback(async () => {
+    // The document processor will automatically reload from database when needed
+    console.log('Documents updated, clearing local cache');
+    documentProcessor.clearDocuments();
+  }, []);
 
   const sendMessage = async () => {
     if (!input.trim() || isLoading) return;
@@ -180,8 +165,7 @@ export const ChatInterface = () => {
       
       <CardContent className="flex-1 flex flex-col space-y-4">
         <DocumentUpload 
-          onDocumentsChange={setUploadedDocuments}
-          uploadedDocuments={uploadedDocuments}
+          onDocumentsProcessed={handleDocumentsProcessed}
         />
         <ScrollArea className="flex-1 pr-4" ref={scrollAreaRef}>
           <div className="space-y-4">

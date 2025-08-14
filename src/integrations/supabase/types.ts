@@ -131,6 +131,80 @@ export type Database = {
           },
         ]
       }
+      document_chunks: {
+        Row: {
+          chunk_index: number
+          chunk_text: string
+          created_at: string
+          document_id: string
+          id: string
+          metadata: Json | null
+          user_id: string
+        }
+        Insert: {
+          chunk_index: number
+          chunk_text: string
+          created_at?: string
+          document_id: string
+          id?: string
+          metadata?: Json | null
+          user_id: string
+        }
+        Update: {
+          chunk_index?: number
+          chunk_text?: string
+          created_at?: string
+          document_id?: string
+          id?: string
+          metadata?: Json | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "document_chunks_document_id_fkey"
+            columns: ["document_id"]
+            isOneToOne: false
+            referencedRelation: "documents"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      documents: {
+        Row: {
+          created_at: string
+          file_size: number
+          file_type: string
+          filename: string
+          id: string
+          processed_chunks: number | null
+          storage_path: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          file_size: number
+          file_type: string
+          filename: string
+          id?: string
+          processed_chunks?: number | null
+          storage_path: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          file_size?: number
+          file_type?: string
+          filename?: string
+          id?: string
+          processed_chunks?: number | null
+          storage_path?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       messages: {
         Row: {
           content: string
