@@ -244,41 +244,78 @@ class DocumentProcessor {
     return chunks;
   }
 
-  findRelevantContext(query: string, language: string, maxChunks: number = 3): string[] {
+  findRelevantContext(query: string, language: string, maxChunks: number = 5): string[] {
     if (this.documentChunks.length === 0) {
       return [];
     }
 
-    // Simple keyword-based matching as fallback
-    const queryWords = query.toLowerCase().split(/\s+/);
+    console.log(`Finding context for query: "${query}" in ${this.documentChunks.length} chunks`);
+
+    // Enhanced keyword-based matching with better scoring
+    const queryWords = query.toLowerCase().split(/\s+/).filter(word => word.length > 2);
+    console.log("Query words:", queryWords);
     
     const scoredChunks = this.documentChunks.map(chunk => {
       let score = 0;
       const chunkText = chunk.text.toLowerCase();
       
-      // Keyword matching
+      // Exact phrase matching (highest score)
+      if (chunkText.includes(query.toLowerCase())) {
+        score += 10;
+      }
+      
+      // Individual keyword matching
       for (const word of queryWords) {
-        if (chunkText.includes(word)) {
-          score += 1;
+        const wordRegex = new RegExp(`\\b${word}\\b`, 'gi');
+        const matches = (chunkText.match(wordRegex) || []).length;
+        score += matches * 2;
+      }
+      
+      // Bonus for JSON key-value pairs that match query
+      if (chunk.metadata.fileType === 'json') {
+        for (const word of queryWords) {
+          // Look for key: value patterns
+          const keyValueRegex = new RegExp(`${word}[^:]*:[^\\n]*`, 'gi');
+          if (keyValueRegex.test(chunkText)) {
+            score += 5;
+          }
+        }
+      }
+      
+      // Bonus for Excel data that matches query
+      if (chunk.metadata.fileType === 'excel') {
+        for (const word of queryWords) {
+          if (chunkText.includes(`| ${word} |`) || chunkText.includes(`${word}:`)) {
+            score += 4;
+          }
         }
       }
       
       // Bonus for language-specific terms
-      const indicTerms = ['dharma', 'karma', 'yoga', 'वेद', 'धर्म', 'కర్మ', 'ಧರ್ಮ'];
+      const indicTerms = ['dharma', 'karma', 'yoga', 'वेद', 'धर्म', 'కর్మ', 'ಧರ್ಮ', 'tithi', 'nakshatra', 'panchang'];
       for (const term of indicTerms) {
         if (chunkText.includes(term.toLowerCase())) {
-          score += 2;
+          score += 3;
         }
       }
       
       return { chunk, score };
     });
 
-    return scoredChunks
+    const relevantChunks = scoredChunks
       .sort((a, b) => b.score - a.score)
       .slice(0, maxChunks)
-      .filter(item => item.score > 0)
-      .map(item => item.chunk.text);
+      .filter(item => item.score > 0);
+
+    console.log(`Found ${relevantChunks.length} relevant chunks with scores:`, 
+                relevantChunks.map(item => ({ 
+                  score: item.score, 
+                  filename: item.chunk.metadata.filename,
+                  fileType: item.chunk.metadata.fileType,
+                  preview: item.chunk.text.substring(0, 100) + "..."
+                })));
+
+    return relevantChunks.map(item => item.chunk.text);
   }
 
   getDocumentStats(): { totalChunks: number; totalDocuments: number } {
