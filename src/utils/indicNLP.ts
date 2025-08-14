@@ -427,6 +427,18 @@ class IndicNLPEngine {
           if (line.includes(':')) {
             const [key, value] = line.split(':').map(s => s.trim());
             if (key && value && value.length > 5) {
+              
+              // Skip if this looks like a question entry
+              if (key.toLowerCase().includes('question') || 
+                  value.toLowerCase().startsWith('what') || 
+                  value.toLowerCase().startsWith('how') ||
+                  value.toLowerCase().startsWith('why') ||
+                  value.toLowerCase().startsWith('when') ||
+                  value.toLowerCase().startsWith('where')) {
+                console.log("Skipping question entry:", key, "->", value.substring(0, 30));
+                continue;
+              }
+              
               const keyScore = questionWords.filter(word => 
                 key.toLowerCase().includes(word) || word.includes(key.toLowerCase().substring(0, Math.max(3, key.length - 2)))
               ).length;
@@ -434,23 +446,37 @@ class IndicNLPEngine {
               if (keyScore > bestScore) {
                 bestScore = keyScore;
                 bestMatch = value.replace(/["\[\]{}]/g, '').trim();
-                console.log("New best match from key-value:", key, "->", bestMatch);
+                console.log("New best match from key-value:", key, "->", bestMatch.substring(0, 50));
               }
             }
           }
         }
       }
       
-      // Check for sentence matches
+      // Check for sentence matches (but skip questions)
       const sentences = context.split(/[.!?]+/).filter(s => s.trim().length > 10);
       for (const sentence of sentences) {
+        const trimmedSentence = sentence.trim();
+        
+        // Skip sentences that look like questions
+        if (trimmedSentence.toLowerCase().startsWith('question:') ||
+            trimmedSentence.toLowerCase().startsWith('what') ||
+            trimmedSentence.toLowerCase().startsWith('how') ||
+            trimmedSentence.toLowerCase().startsWith('why') ||
+            trimmedSentence.toLowerCase().startsWith('when') ||
+            trimmedSentence.toLowerCase().startsWith('where') ||
+            trimmedSentence.includes('?')) {
+          console.log("Skipping question sentence:", trimmedSentence.substring(0, 30));
+          continue;
+        }
+        
         const sentenceScore = questionWords.filter(word => 
           sentence.toLowerCase().includes(word)
         ).length;
         
-        if (sentenceScore > bestScore && sentence.trim().length > 20) {
+        if (sentenceScore > bestScore && trimmedSentence.length > 20) {
           bestScore = sentenceScore;
-          bestMatch = sentence.trim();
+          bestMatch = trimmedSentence;
           console.log("New best match from sentence:", bestMatch.substring(0, 50));
         }
       }
@@ -458,7 +484,6 @@ class IndicNLPEngine {
     
     return bestMatch.length > 15 ? bestMatch : null;
   }
-
 
   private extractMainTopic(message: string): string {
     const lowerMessage = message.toLowerCase();
