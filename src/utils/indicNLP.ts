@@ -562,6 +562,9 @@ class IndicNLPEngine {
         body: { message, language }
       });
 
+      console.log("Perplexity response data:", data);
+      console.log("Perplexity response error:", error);
+
       if (error) {
         console.error('Error calling perplexity-search:', error);
         return this.getNoAnswerResponse(language);
@@ -572,6 +575,7 @@ class IndicNLPEngine {
         return data.answer;
       }
 
+      console.log("No answer found in perplexity response:", data);
       return this.getNoAnswerResponse(language);
     } catch (error) {
       console.error('Error in searchGeneralKnowledge:', error);
