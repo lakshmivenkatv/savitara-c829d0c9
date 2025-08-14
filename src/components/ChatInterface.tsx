@@ -3,10 +3,12 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { ScrollArea } from '@/components/ui/scroll-area';
-import { Send, Bot, User } from 'lucide-react';
+import { Send, Bot, User, Cpu, Cloud } from 'lucide-react';
 import { LanguageSelector } from './LanguageSelector';
+import { EngineSelector } from './EngineSelector';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
+import { indicNLP } from '@/utils/indicNLP';
 
 interface Message {
   id: string;
@@ -20,6 +22,8 @@ export const ChatInterface = () => {
   const [input, setInput] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [language, setLanguage] = useState('english');
+  const [engine, setEngine] = useState('azure');
+  const [isInitializingIndic, setIsInitializingIndic] = useState(false);
   const scrollAreaRef = useRef<HTMLDivElement>(null);
   const { toast } = useToast();
 
@@ -28,6 +32,32 @@ export const ChatInterface = () => {
       scrollAreaRef.current.scrollTop = scrollAreaRef.current.scrollHeight;
     }
   }, [messages]);
+
+  // Initialize Indic NLP when engine switches to indic
+  useEffect(() => {
+    if (engine === 'indic' && !isInitializingIndic) {
+      setIsInitializingIndic(true);
+      indicNLP.initialize()
+        .then(() => {
+          toast({
+            title: "Indic NLP Ready",
+            description: "Specialized Indic language engine is now active",
+          });
+        })
+        .catch((error) => {
+          console.error('Failed to initialize Indic NLP:', error);
+          toast({
+            title: "Engine Error",
+            description: "Failed to initialize Indic NLP. Falling back to Azure.",
+            variant: "destructive",
+          });
+          setEngine('azure');
+        })
+        .finally(() => {
+          setIsInitializingIndic(false);
+        });
+    }
+  }, [engine, toast, isInitializingIndic]);
 
   const sendMessage = async () => {
     if (!input.trim() || isLoading) return;
@@ -40,22 +70,35 @@ export const ChatInterface = () => {
     };
 
     setMessages(prev => [...prev, userMessage]);
+    const currentInput = input;
     setInput('');
     setIsLoading(true);
 
     try {
-      const { data, error } = await supabase.functions.invoke('azure-chat', {
-        body: {
-          messages: [{ role: 'user', content: input }],
-          language
-        }
-      });
+      let assistantContent: string;
 
-      if (error) throw error;
+      if (engine === 'indic') {
+        // Use Indic NLP engine
+        assistantContent = await indicNLP.generateResponse(currentInput, {
+          language,
+          context: messages.slice(-2).map(m => `${m.role}: ${m.content}`).join('\n')
+        });
+      } else {
+        // Use Azure OpenAI
+        const { data, error } = await supabase.functions.invoke('azure-chat', {
+          body: {
+            messages: [{ role: 'user', content: currentInput }],
+            language
+          }
+        });
+
+        if (error) throw error;
+        assistantContent = data.message;
+      }
 
       const assistantMessage: Message = {
         id: (Date.now() + 1).toString(),
-        content: data.message,
+        content: assistantContent,
         role: 'assistant',
         timestamp: new Date(),
       };
@@ -65,7 +108,7 @@ export const ChatInterface = () => {
       console.error('Error sending message:', error);
       toast({
         title: "Error",
-        description: "Failed to send message. Please try again.",
+        description: `Failed to send message using ${engine === 'indic' ? 'Indic NLP' : 'Azure OpenAI'}. Please try again.`,
         variant: "destructive",
       });
     } finally {
@@ -82,11 +125,28 @@ export const ChatInterface = () => {
 
   return (
     <Card className="w-full max-w-4xl mx-auto h-[600px] flex flex-col">
-      <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-4">
-        <CardTitle className="text-2xl font-bold bg-gradient-to-r from-orange-600 to-orange-800 bg-clip-text text-transparent">
-          Hindu Dharma AI Assistant
-        </CardTitle>
-        <LanguageSelector value={language} onValueChange={setLanguage} />
+      <CardHeader className="flex flex-col space-y-4 pb-4">
+        <div className="flex flex-row items-center justify-between">
+          <CardTitle className="text-2xl font-bold bg-gradient-to-r from-orange-600 to-orange-800 bg-clip-text text-transparent">
+            Hindu Dharma AI Assistant
+          </CardTitle>
+          <div className="flex items-center gap-2">
+            {engine === 'azure' ? <Cloud className="w-5 h-5 text-blue-500" /> : <Cpu className="w-5 h-5 text-green-500" />}
+            <span className="text-sm text-muted-foreground">
+              {engine === 'azure' ? 'Azure OpenAI' : 'Indic NLP'}
+            </span>
+          </div>
+        </div>
+        <div className="flex flex-row items-center justify-between gap-4">
+          <EngineSelector value={engine} onValueChange={setEngine} />
+          <LanguageSelector value={language} onValueChange={setLanguage} />
+        </div>
+        {isInitializingIndic && (
+          <div className="text-sm text-muted-foreground flex items-center gap-2">
+            <div className="w-4 h-4 border-2 border-orange-200 border-t-orange-600 rounded-full animate-spin"></div>
+            Initializing Indic NLP engine...
+          </div>
+        )}
       </CardHeader>
       
       <CardContent className="flex-1 flex flex-col space-y-4">
