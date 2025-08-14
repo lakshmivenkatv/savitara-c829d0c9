@@ -1,0 +1,191 @@
+import { useState } from 'react';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Textarea } from '@/components/ui/textarea';
+import { supabase } from '@/integrations/supabase/client';
+import { useToast } from '@/hooks/use-toast';
+
+export const SignupForm = () => {
+  const [formData, setFormData] = useState({
+    email: '',
+    password: '',
+    fullName: '',
+    userType: '',
+    sampradaya: '',
+    location: '',
+    bio: '',
+    experienceYears: '',
+    specializations: [] as string[],
+    languages: ['english'] as string[],
+  });
+  const [isLoading, setIsLoading] = useState(false);
+  const { toast } = useToast();
+
+  const handleSignup = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setIsLoading(true);
+
+    try {
+      const { data: authData, error: authError } = await supabase.auth.signUp({
+        email: formData.email,
+        password: formData.password,
+        options: {
+          emailRedirectTo: `${window.location.origin}/`,
+        },
+      });
+
+      if (authError) throw authError;
+
+      if (authData.user) {
+        const profileData = {
+          user_id: authData.user.id,
+          full_name: formData.fullName,
+          user_type: formData.userType as 'acharya' | 'grihasta',
+          sampradaya: formData.sampradaya as 'madhva' | 'vaishnava' | 'smarta',
+          location: formData.location,
+          bio: formData.bio,
+          languages: formData.languages,
+          ...(formData.userType === 'acharya' && {
+            experience_years: parseInt(formData.experienceYears) || null,
+            specializations: formData.specializations,
+          }),
+        };
+
+        const { error: profileError } = await supabase
+          .from('profiles')
+          .insert(profileData);
+
+        if (profileError) throw profileError;
+      }
+
+      toast({
+        title: "Success",
+        description: "Account created successfully! Please check your email for verification.",
+      });
+    } catch (error: any) {
+      toast({
+        title: "Error",
+        description: error.message || "Failed to create account",
+        variant: "destructive",
+      });
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const updateFormData = (field: string, value: any) => {
+    setFormData(prev => ({ ...prev, [field]: value }));
+  };
+
+  return (
+    <form onSubmit={handleSignup} className="space-y-4">
+      <div className="space-y-2">
+        <Label htmlFor="email">Email</Label>
+        <Input
+          id="email"
+          type="email"
+          value={formData.email}
+          onChange={(e) => updateFormData('email', e.target.value)}
+          required
+        />
+      </div>
+      
+      <div className="space-y-2">
+        <Label htmlFor="password">Password</Label>
+        <Input
+          id="password"
+          type="password"
+          value={formData.password}
+          onChange={(e) => updateFormData('password', e.target.value)}
+          required
+        />
+      </div>
+
+      <div className="space-y-2">
+        <Label htmlFor="fullName">Full Name</Label>
+        <Input
+          id="fullName"
+          value={formData.fullName}
+          onChange={(e) => updateFormData('fullName', e.target.value)}
+          required
+        />
+      </div>
+
+      <div className="space-y-2">
+        <Label>User Type</Label>
+        <Select value={formData.userType} onValueChange={(value) => updateFormData('userType', value)}>
+          <SelectTrigger>
+            <SelectValue placeholder="Select user type" />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="grihasta">Grihasta (Seeker)</SelectItem>
+            <SelectItem value="acharya">Acharya (Teacher)</SelectItem>
+          </SelectContent>
+        </Select>
+      </div>
+
+      <div className="space-y-2">
+        <Label>Sampradaya</Label>
+        <Select value={formData.sampradaya} onValueChange={(value) => updateFormData('sampradaya', value)}>
+          <SelectTrigger>
+            <SelectValue placeholder="Select sampradaya" />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="madhva">Madhva</SelectItem>
+            <SelectItem value="vaishnava">Vaishnava</SelectItem>
+            <SelectItem value="smarta">Smarta</SelectItem>
+          </SelectContent>
+        </Select>
+      </div>
+
+      <div className="space-y-2">
+        <Label htmlFor="location">Location</Label>
+        <Input
+          id="location"
+          value={formData.location}
+          onChange={(e) => updateFormData('location', e.target.value)}
+        />
+      </div>
+
+      {formData.userType === 'acharya' && (
+        <>
+          <div className="space-y-2">
+            <Label htmlFor="experienceYears">Years of Experience</Label>
+            <Input
+              id="experienceYears"
+              type="number"
+              value={formData.experienceYears}
+              onChange={(e) => updateFormData('experienceYears', e.target.value)}
+            />
+          </div>
+
+          <div className="space-y-2">
+            <Label htmlFor="specializations">Specializations (comma-separated)</Label>
+            <Input
+              id="specializations"
+              placeholder="e.g., Vedanta, Karma Kanda, Astrology"
+              value={formData.specializations.join(', ')}
+              onChange={(e) => updateFormData('specializations', e.target.value.split(',').map(s => s.trim()))}
+            />
+          </div>
+        </>
+      )}
+
+      <div className="space-y-2">
+        <Label htmlFor="bio">Bio</Label>
+        <Textarea
+          id="bio"
+          value={formData.bio}
+          onChange={(e) => updateFormData('bio', e.target.value)}
+          placeholder="Tell us about yourself..."
+        />
+      </div>
+
+      <Button type="submit" className="w-full" disabled={isLoading}>
+        {isLoading ? 'Creating Account...' : 'Create Account'}
+      </Button>
+    </form>
+  );
+};
