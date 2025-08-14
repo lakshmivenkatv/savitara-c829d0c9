@@ -8,6 +8,7 @@ const corsHeaders = {
 
 const AZURE_ENDPOINT = "https://admin-meayu0si-eastus2.cognitiveservices.azure.com";
 const DEPLOYMENT_NAME = "savitara-gpt-5-nano-2";
+const API_VERSION = "2024-08-01-preview";
 
 serve(async (req) => {
   if (req.method === 'OPTIONS') {
@@ -25,11 +26,11 @@ serve(async (req) => {
     const systemPrompt = getSystemPrompt(language);
 
     const response = await fetch(
-      `${AZURE_ENDPOINT}/openai/deployments/${DEPLOYMENT_NAME}/chat/completions?api-version=2024-08-01-preview`,
+      `${AZURE_ENDPOINT}/openai/deployments/${DEPLOYMENT_NAME}/chat/completions?api-version=${API_VERSION}`,
       {
         method: 'POST',
         headers: {
-          'Authorization': `Bearer ${apiKey}`,
+          'api-key': apiKey,
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
@@ -46,8 +47,14 @@ serve(async (req) => {
 
     if (!response.ok) {
       const errorText = await response.text();
-      console.error('Azure OpenAI API error:', errorText);
-      throw new Error(`Azure OpenAI API error: ${response.status}`);
+      console.error('Azure OpenAI API error:', {
+        status: response.status,
+        statusText: response.statusText,
+        body: errorText,
+        endpoint: `${AZURE_ENDPOINT}/openai/deployments/${DEPLOYMENT_NAME}/chat/completions?api-version=${API_VERSION}`,
+        headers: response.headers
+      });
+      throw new Error(`Azure OpenAI API error: ${response.status} - ${errorText}`);
     }
 
     const data = await response.json();
