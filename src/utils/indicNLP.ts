@@ -165,16 +165,38 @@ class IndicNLPEngine {
     }
 
     try {
+      console.log("=== INDIC NLP PROCESSING ===");
+      console.log("Input message:", message);
+      console.log("Language:", config.language);
+      
       const { documentProcessor } = await import('./documentProcessor');
       
-      // Analyze the full message for better understanding
+      // First check if we have any documents uploaded
+      const documentStats = documentProcessor.getDocumentStats();
+      console.log("Document stats:", documentStats);
+      
+      if (documentStats.totalChunks > 0) {
+        console.log("Documents available, searching for relevant content...");
+        const documentContext = documentProcessor.findRelevantContext(message, config.language, 3);
+        console.log("Found document context:", documentContext.length, "chunks");
+        
+        if (documentContext.length > 0) {
+          // Try to find a direct answer in the documents
+          const directAnswer = this.findBestAnswer(message, documentContext, config.language);
+          if (directAnswer && directAnswer.length > 15) {
+            console.log("Found direct answer:", directAnswer.substring(0, 100));
+            return directAnswer;
+          }
+        }
+      }
+      
+      // If no documents or no relevant context, analyze message for template response
+      console.log("No relevant documents found, using template response");
       const analysis = await this.analyzeMessage(message, config.language);
+      const primaryTopic = analysis.topics[0] || this.extractMainTopic(message);
       
-      // Get relevant context from uploaded documents
-      const documentContext = documentProcessor.findRelevantContext(message, config.language, 2);
+      return this.getContextualTemplate(analysis, config.language, primaryTopic);
       
-      // Generate a sophisticated response based on full analysis
-      return this.generateContextualResponse(message, analysis, documentContext, config.language);
     } catch (error) {
       console.error("Error generating response with Indic NLP:", error);
       return this.getFallbackResponse(config.language);
@@ -202,37 +224,6 @@ class IndicNLPEngine {
     };
   }
 
-  private generateContextualResponse(message: string, analysis: MessageAnalysis, documentContext: string[], language: string): string {
-    console.log("Generating response for analysis:", analysis);
-    console.log("Document context available:", documentContext.length, "chunks");
-    
-    // If we have document context, try to use it more intelligently
-    if (documentContext.length > 0) {
-      console.log("Document context found, generating contextual response...");
-      
-      // First try direct answer extraction
-      const directAnswer = this.extractDirectAnswer(message, documentContext, language);
-      if (directAnswer && directAnswer.length > 20) {
-        console.log("Found substantial direct answer:", directAnswer.substring(0, 100) + "...");
-        return directAnswer;
-      }
-      
-      // If no direct answer, try to synthesize from document context
-      const synthesizedAnswer = this.synthesizeFromDocuments(message, documentContext, language);
-      if (synthesizedAnswer && synthesizedAnswer.length > 20) {
-        console.log("Synthesized answer from documents:", synthesizedAnswer.substring(0, 100) + "...");
-        return synthesizedAnswer;
-      }
-      
-      console.log("Document context not relevant, falling back to templates");
-    }
-
-    // Fallback to templates only when documents don't help
-    const primaryTopic = analysis.topics[0] || this.extractMainTopic(message);
-    console.log("Using template for topic:", primaryTopic);
-    
-    return this.getContextualTemplate(analysis, language, primaryTopic);
-  }
 
   // Built-in contextual analysis methods
   private classifyQuestionType(message: string): string {
@@ -415,128 +406,54 @@ class IndicNLPEngine {
     return contexts[language] || contexts.english;
   }
 
-  // Enhanced direct answer extraction methods
-  private extractDirectAnswer(question: string, documentContext: string[], language: string): string | null {
-    console.log("Extracting direct answer for:", question);
+  // Simplified direct answer extraction
+  private findBestAnswer(question: string, documentContext: string[], language: string): string | null {
+    console.log("Looking for best answer in", documentContext.length, "chunks");
     
-    const lowerQuestion = question.toLowerCase();
-    const questionWords = lowerQuestion.split(/\s+/).filter(word => word.length > 2);
+    const questionWords = question.toLowerCase().split(/\s+/).filter(w => w.length > 2);
+    let bestMatch = '';
+    let bestScore = 0;
     
     for (const context of documentContext) {
-      // Try multiple extraction methods
-      let answer = this.extractFromKeyValue(question, context, questionWords);
-      if (answer) return answer;
-      
-      answer = this.extractFromSentenceMatching(question, context, questionWords);
-      if (answer) return answer;
-      
-      answer = this.extractFromSemanticSearch(question, context, questionWords);
-      if (answer) return answer;
-    }
-    
-    return null;
-  }
-
-  private extractFromKeyValue(question: string, context: string, questionWords: string[]): string | null {
-    if (!context.includes(':')) return null;
-    
-    const lines = context.split('\n');
-    for (const line of lines) {
-      if (line.includes(':')) {
-        const [key, value] = line.split(':').map(s => s.trim());
-        if (key && value && value.length > 10) {
-          const keyWords = key.toLowerCase().split(/\s+/);
-          const matchScore = questionWords.filter(qWord => 
-            keyWords.some(kWord => kWord.includes(qWord) || qWord.includes(kWord) || 
-                         this.areWordsSimilar(qWord, kWord))
-          ).length;
-          
-          if (matchScore >= Math.min(2, questionWords.length * 0.3)) {
-            console.log("Found key-value match:", key, "->", value);
-            return value.replace(/["\[\]{}]/g, '').trim();
+      // Check for key-value pairs first (JSON data)
+      if (context.includes(':')) {
+        const lines = context.split('\n');
+        for (const line of lines) {
+          if (line.includes(':')) {
+            const [key, value] = line.split(':').map(s => s.trim());
+            if (key && value && value.length > 5) {
+              const keyScore = questionWords.filter(word => 
+                key.toLowerCase().includes(word) || word.includes(key.toLowerCase().substring(0, Math.max(3, key.length - 2)))
+              ).length;
+              
+              if (keyScore > bestScore) {
+                bestScore = keyScore;
+                bestMatch = value.replace(/["\[\]{}]/g, '').trim();
+                console.log("New best match from key-value:", key, "->", bestMatch);
+              }
+            }
           }
         }
       }
-    }
-    return null;
-  }
-
-  private extractFromSentenceMatching(question: string, context: string, questionWords: string[]): string | null {
-    const sentences = context.split(/[.!?]+/).filter(s => s.trim().length > 20);
-    
-    for (const sentence of sentences) {
-      const lowerSentence = sentence.toLowerCase();
-      const matchCount = questionWords.filter(word => 
-        lowerSentence.includes(word) || lowerSentence.includes(word.substring(0, 4))
-      ).length;
       
-      if (matchCount >= Math.min(2, questionWords.length * 0.4)) {
-        console.log("Found sentence match:", sentence.substring(0, 100));
-        return sentence.trim();
+      // Check for sentence matches
+      const sentences = context.split(/[.!?]+/).filter(s => s.trim().length > 10);
+      for (const sentence of sentences) {
+        const sentenceScore = questionWords.filter(word => 
+          sentence.toLowerCase().includes(word)
+        ).length;
+        
+        if (sentenceScore > bestScore && sentence.trim().length > 20) {
+          bestScore = sentenceScore;
+          bestMatch = sentence.trim();
+          console.log("New best match from sentence:", bestMatch.substring(0, 50));
+        }
       }
     }
-    return null;
+    
+    return bestMatch.length > 15 ? bestMatch : null;
   }
 
-  private extractFromSemanticSearch(question: string, context: string, questionWords: string[]): string | null {
-    // Look for paragraphs or chunks that contain multiple question words
-    const chunks = context.split('\n\n').filter(chunk => chunk.trim().length > 30);
-    
-    for (const chunk of chunks) {
-      const lowerChunk = chunk.toLowerCase();
-      const relevanceScore = questionWords.reduce((score, word) => {
-        if (lowerChunk.includes(word)) return score + 2;
-        if (lowerChunk.includes(word.substring(0, Math.max(3, word.length - 2)))) return score + 1;
-        return score;
-      }, 0);
-      
-      if (relevanceScore >= 3) {
-        console.log("Found semantic match with score:", relevanceScore);
-        return chunk.trim();
-      }
-    }
-    return null;
-  }
-
-  private synthesizeFromDocuments(question: string, documentContext: string[], language: string): string | null {
-    console.log("Synthesizing answer from documents");
-    
-    const allRelevantText = documentContext.join('\n');
-    const questionWords = question.toLowerCase().split(/\s+/).filter(w => w.length > 2);
-    
-    // Find the most relevant sentences/paragraphs
-    const relevantParts: string[] = [];
-    const sentences = allRelevantText.split(/[.!?]+/).filter(s => s.trim().length > 15);
-    
-    for (const sentence of sentences) {
-      const lowerSentence = sentence.toLowerCase();
-      const matches = questionWords.filter(word => lowerSentence.includes(word)).length;
-      
-      if (matches >= 1 && sentence.trim().length > 20) {
-        relevantParts.push(sentence.trim());
-      }
-    }
-    
-    if (relevantParts.length > 0) {
-      // Take the most relevant parts and combine them
-      const answer = relevantParts.slice(0, 3).join('. ').replace(/\s+/g, ' ').trim();
-      if (answer.length > 30) {
-        console.log("Synthesized comprehensive answer");
-        return answer;
-      }
-    }
-    
-    return null;
-  }
-
-  private areWordsSimilar(word1: string, word2: string): boolean {
-    if (word1.length < 3 || word2.length < 3) return false;
-    
-    const shorter = word1.length < word2.length ? word1 : word2;
-    const longer = word1.length >= word2.length ? word1 : word2;
-    
-    return longer.includes(shorter.substring(0, Math.max(3, shorter.length - 1)));
-  }
 
   private extractMainTopic(message: string): string {
     const lowerMessage = message.toLowerCase();
