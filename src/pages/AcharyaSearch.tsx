@@ -9,13 +9,13 @@ import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 import { useNavigate } from 'react-router-dom';
 
-interface Acharya {
+interface AcharyaPublicProfile {
   id: string;
   user_id: string;
   full_name: string;
   sampradaya: string;
   location: string;
-  bio: string;
+  bio_preview: string; // Note: This is truncated bio for privacy
   experience_years: number;
   specializations: string[];
   languages: string[];
@@ -23,8 +23,8 @@ interface Acharya {
 }
 
 export default function AcharyaSearch() {
-  const [acharyas, setAcharyas] = useState<Acharya[]>([]);
-  const [filteredAcharyas, setFilteredAcharyas] = useState<Acharya[]>([]);
+  const [acharyas, setAcharyas] = useState<AcharyaPublicProfile[]>([]);
+  const [filteredAcharyas, setFilteredAcharyas] = useState<AcharyaPublicProfile[]>([]);
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedSampradaya, setSelectedSampradaya] = useState('');
   const [selectedLocation, setSelectedLocation] = useState('');
@@ -43,9 +43,8 @@ export default function AcharyaSearch() {
   const fetchAcharyas = async () => {
     try {
       const { data, error } = await supabase
-        .from('profiles')
+        .from('acharya_public_profiles')
         .select('*')
-        .eq('user_type', 'acharya')
         .eq('availability', true);
 
       if (error) throw error;
@@ -70,7 +69,7 @@ export default function AcharyaSearch() {
         acharya.specializations?.some(spec => 
           spec.toLowerCase().includes(searchTerm.toLowerCase())
         ) ||
-        acharya.bio?.toLowerCase().includes(searchTerm.toLowerCase())
+        acharya.bio_preview?.toLowerCase().includes(searchTerm.toLowerCase())
       );
     }
 
@@ -212,11 +211,14 @@ export default function AcharyaSearch() {
                 </div>
               </div>
 
-              {acharya.bio && (
+              {acharya.bio_preview && (
                 <div>
                   <h4 className="font-semibold text-sm mb-2">About</h4>
                   <p className="text-sm text-muted-foreground line-clamp-3">
-                    {acharya.bio}
+                    {acharya.bio_preview}
+                  </p>
+                  <p className="text-xs text-muted-foreground mt-1 italic">
+                    Full profile available after starting conversation
                   </p>
                 </div>
               )}
