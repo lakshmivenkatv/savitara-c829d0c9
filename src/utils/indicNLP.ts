@@ -203,59 +203,30 @@ class IndicNLPEngine {
   }
 
   private generateContextualResponse(message: string, analysis: MessageAnalysis, documentContext: string[], language: string): string {
-    console.log("Generating contextual response for analysis:", analysis);
+    console.log("Generating response for analysis:", analysis);
     
-    // Use the primary topic from analysis instead of just first word
-    const primaryTopic = analysis.topics[0] || "dharma";
-    console.log("Primary topic identified:", primaryTopic);
-    console.log("Question type:", analysis.questionType);
-    console.log("Intent:", analysis.intent);
-    
-    // Get contextual templates based on question type and intent
-    let response = this.getContextualTemplate(analysis, language, primaryTopic);
-    console.log("Base response generated:", response);
-
-    // Add more context based on entities found
-    if (analysis.entities.length > 0) {
-      console.log("Entities found:", analysis.entities);
-      response += this.getEntityContext(analysis.entities, language);
-    }
-
-    // Add document-based context if available
+    // FIRST PRIORITY: Check for direct answers in uploaded documents
     if (documentContext.length > 0) {
-      console.log("Found document context:", documentContext.length, "chunks");
-      
-      // Check if the document context contains a direct answer
+      console.log("Checking for direct answer in documents...");
       const directAnswer = this.extractDirectAnswer(message, documentContext, language);
       if (directAnswer) {
-        console.log("Found direct answer in documents:", directAnswer);
+        console.log("Found direct answer, returning immediately:", directAnswer);
         return directAnswer;
       }
-      
-      const contextualInfo = this.getContextualAddition(language);
-      response += contextualInfo;
-      
-      // Add specific insights from documents
-      const documentInsight = this.extractInsightFromContext(documentContext, language);
-      response += documentInsight;
-      
-      // Add relevant document excerpts
-      const relevantExcerpts = this.getRelevantExcerpts(documentContext, language);
-      if (relevantExcerpts) {
-        response += relevantExcerpts;
-      }
+      console.log("No direct answer found, proceeding with templates");
     }
 
-    // Add domain-specific context
-    if (message.toLowerCase().includes('ritual') || message.toLowerCase().includes('पूजा') || message.toLowerCase().includes('यज्ञ')) {
+    // SECOND PRIORITY: Use contextual templates only if no direct answer
+    const primaryTopic = analysis.topics[0] || "dharma";
+    console.log("Using template for topic:", primaryTopic);
+    
+    let response = this.getContextualTemplate(analysis, language, primaryTopic);
+
+    // Add minimal context for domain-specific queries
+    if (message.toLowerCase().includes('ritual') || message.toLowerCase().includes('पूजा')) {
       response += this.getRitualContext(language);
-    } else if (message.toLowerCase().includes('scripture') || message.toLowerCase().includes('वेद') || message.toLowerCase().includes('शास्त्र')) {
+    } else if (message.toLowerCase().includes('scripture') || message.toLowerCase().includes('वेद')) {
       response += this.getScriptureContext(language);
-    }
-
-    // Add philosophical depth based on question complexity
-    if (message.length > 50 || message.includes('why') || message.includes('कैसे') || message.includes('क्यों')) {
-      response += this.getPhilosophicalContext(language);
     }
 
     return response;
@@ -448,97 +419,73 @@ class IndicNLPEngine {
   }
 
   private extractDirectAnswerHelper(question: string, documentContext: string[], language: string): string | null {
-    // For now, implement inline
-    console.log("Checking for direct answer in documents");
+    console.log("Searching for direct answer in", documentContext.length, "document chunks");
     
-    // Look for direct question-answer patterns in the documents
+    const lowerQuestion = question.toLowerCase();
+    const questionWords = lowerQuestion.split(/\s+/).filter(word => word.length > 2);
+    
     for (const context of documentContext) {
       const lowerContext = context.toLowerCase();
-      const lowerQuestion = question.toLowerCase();
       
-      // Check for Q&A patterns
-      const qaPatternsRegex = [
-        /q[:\s]*([^?]*\?[^a]*?)a[:\s]*([^q\n]*)/gi,
-        /question[:\s]*([^?]*\?[^a]*?)answer[:\s]*([^q\n]*)/gi,
-        /प्रश्न[:\s]*([^?]*\?[^उ]*?)उत्तर[:\s]*([^प्र\n]*)/gi
-      ];
-      
-      for (const pattern of qaPatternsRegex) {
-        const matches = [...context.matchAll(pattern)];
-        for (const match of matches) {
-          const questionPart = match[1]?.toLowerCase() || '';
-          const answerPart = match[2]?.trim() || '';
-          
-          // Check if the question in the document matches our query
-          const questionWords = lowerQuestion.split(/\s+/).filter(word => word.length > 2);
-          const matchingWords = questionWords.filter(word => questionPart.includes(word));
-          
-          if (matchingWords.length >= Math.min(2, questionWords.length) && answerPart.length > 10) {
-            return this.formatDirectAnswer(answerPart, language);
-          }
-        }
-      }
-      
-      // Check for key-value pairs in JSON format
+      // Look for JSON key-value pairs that match the question
       if (context.includes(':')) {
-        const keyValuePairs = context.split('\n').filter(line => line.includes(':'));
-        for (const pair of keyValuePairs) {
-          const [key, value] = pair.split(':').map(s => s.trim());
-          if (key && value && lowerQuestion.includes(key.toLowerCase()) && value.length > 3) {
-            return this.formatDirectAnswer(value, language);
+        const lines = context.split('\n');
+        for (const line of lines) {
+          if (line.includes(':')) {
+            const [key, value] = line.split(':').map(s => s.trim());
+            if (key && value && value.length > 3) {
+              // Check if any question word matches the key
+              const keyWords = key.toLowerCase().split(/\s+/);
+              const matchCount = questionWords.filter(qWord => 
+                keyWords.some(kWord => kWord.includes(qWord) || qWord.includes(kWord))
+              ).length;
+              
+              if (matchCount > 0) {
+                console.log("Found matching key-value:", key, "->", value);
+                return this.formatDirectAnswer(value, language);
+              }
+            }
           }
         }
       }
       
-      // Check for exact phrase matches that might be answers
-      const questionKeywords = lowerQuestion.split(/\s+/).filter(word => word.length > 3);
-      for (const keyword of questionKeywords) {
-        const keywordRegex = new RegExp(`${keyword}[^.]*\\.`, 'gi');
-        const matches = context.match(keywordRegex);
-        if (matches && matches[0] && matches[0].length > 20) {
-          return this.formatDirectAnswer(matches[0], language);
+      // Look for exact phrase matches
+      for (const word of questionWords) {
+        if (lowerContext.includes(word)) {
+          // Find sentences containing the keyword
+          const sentences = context.split(/[.!?]+/).filter(s => s.trim().length > 10);
+          for (const sentence of sentences) {
+            if (sentence.toLowerCase().includes(word) && sentence.trim().length > 20) {
+              console.log("Found matching sentence:", sentence.trim());
+              return this.formatDirectAnswer(sentence.trim(), language);
+            }
+          }
         }
       }
     }
     
+    console.log("No direct answer found in documents");
     return null;
   }
 
   private formatDirectAnswer(answer: string, language: string): string {
+    // Clean up the answer
+    const cleanAnswer = answer.replace(/^["\s]+|["\s]+$/g, '').trim();
+    
+    if (cleanAnswer.length < 3) return cleanAnswer;
+    
     const prefixes: Record<string, string> = {
-      hindi: "आपके अपलोड किए गए दस्तावेज़ के अनुसार: ",
-      english: "According to your uploaded document: ",
-      sanskrit: "भवतः उपलब्धकृते ग्रन्थे अनुसारेण: ",
-      telugu: "మీరు అప్‌లోడ్ చేసిన పత్రం ప్రకారం: ",
-      kannada: "ನೀವು ಅಪ್‌ಲೋಡ್ ಮಾಡಿದ ದಾಖಲೆಯ ಪ್ರಕಾರ: "
+      hindi: "आपके डॉक्यूमेंट के अनुसार: ",
+      english: "From your document: ",
+      sanskrit: "भवतः ग्रन्थे: ",
+      telugu: "మీ పత్రం నుండి: ",
+      kannada: "ನಿಮ್ಮ ದಾಖಲೆಯಿಂದ: "
     };
     
     const prefix = prefixes[language] || prefixes.english;
-    return prefix + answer.trim();
+    return prefix + cleanAnswer;
   }
 
-  private getRelevantExcerpts(documentContext: string[], language: string): string {
-    if (documentContext.length === 0) return '';
-    
-    // Get the most relevant excerpt (first one which has highest score)
-    const excerpt = documentContext[0];
-    if (excerpt.length > 200) {
-      const truncated = excerpt.substring(0, 200) + "...";
-      
-      const excerptIntros: Record<string, string> = {
-        hindi: "\n\nसंबंधित जानकारी: ",
-        english: "\n\nRelevant information: ",
-        sanskrit: "\n\nसम्बद्धं ज्ञानम्: ",
-        telugu: "\n\nసంబంధిత సమాచారం: ",
-        kannada: "\n\nಸಂಬಂಧಿತ ಮಾಹಿತಿ: "
-      };
-      
-      const intro = excerptIntros[language] || excerptIntros.english;
-      return intro + truncated;
-    }
-    
-    return '';
-  }
 
   private getRitualContext(language: string): string {
     const ritualContexts: Record<string, string> = {
