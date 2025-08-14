@@ -1,7 +1,7 @@
 import { Button } from '@/components/ui/button';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
-import { LogOut, MessageCircle, Search, Home } from 'lucide-react';
+import { LogOut, MessageCircle, Search, Home, Users } from 'lucide-react';
 import { Link, useLocation } from 'react-router-dom';
 
 interface NavigationProps {
@@ -33,6 +33,7 @@ export const Navigation = ({ user }: NavigationProps) => {
   const navItems = [
     { to: '/', icon: Home, label: 'Home' },
     { to: '/acharyas', icon: Search, label: 'Find Acharyas' },
+    { to: '/connection-requests', icon: Users, label: 'Connections' },
     { to: '/conversations', icon: MessageCircle, label: 'Conversations' },
   ];
 

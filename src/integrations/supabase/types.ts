@@ -59,6 +59,36 @@ export type Database = {
         }
         Relationships: []
       }
+      connection_requests: {
+        Row: {
+          acharya_id: string
+          created_at: string
+          grihasta_id: string
+          id: string
+          message: string | null
+          status: string
+          updated_at: string
+        }
+        Insert: {
+          acharya_id: string
+          created_at?: string
+          grihasta_id: string
+          id?: string
+          message?: string | null
+          status?: string
+          updated_at?: string
+        }
+        Update: {
+          acharya_id?: string
+          created_at?: string
+          grihasta_id?: string
+          id?: string
+          message?: string | null
+          status?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       conversations: {
         Row: {
           acharya_id: string

@@ -8,6 +8,7 @@ import { Search, MapPin, BookOpen, MessageCircle } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 import { useNavigate } from 'react-router-dom';
+import { ConnectionRequestButton } from '@/components/ConnectionRequestButton';
 
 interface AcharyaPublicProfile {
   id: string;
@@ -29,12 +30,45 @@ export default function AcharyaSearch() {
   const [selectedSampradaya, setSelectedSampradaya] = useState('all');
   const [selectedLocation, setSelectedLocation] = useState('');
   const [isLoading, setIsLoading] = useState(true);
+  const [currentUserId, setCurrentUserId] = useState<string | null>(null);
+  const [connectionStatuses, setConnectionStatuses] = useState<Record<string, any>>({});
   const { toast } = useToast();
   const navigate = useNavigate();
 
   useEffect(() => {
-    fetchAcharyas();
+    initializeData();
   }, []);
+
+  const initializeData = async () => {
+    const { data: { session } } = await supabase.auth.getSession();
+    if (session?.user?.id) {
+      setCurrentUserId(session.user.id);
+    }
+    await fetchAcharyas();
+    if (session?.user?.id) {
+      await fetchConnectionStatuses(session.user.id);
+    }
+  };
+
+  const fetchConnectionStatuses = async (userId: string) => {
+    try {
+      const { data: connections } = await supabase
+        .from("connection_requests")
+        .select("acharya_id, status, message")
+        .eq("grihasta_id", userId);
+
+      const statusMap: Record<string, any> = {};
+      connections?.forEach(conn => {
+        statusMap[conn.acharya_id] = {
+          status: conn.status,
+          message: conn.message
+        };
+      });
+      setConnectionStatuses(statusMap);
+    } catch (error) {
+      console.error("Error fetching connection statuses:", error);
+    }
+  };
 
   useEffect(() => {
     filterAcharyas();
@@ -268,14 +302,11 @@ export default function AcharyaSearch() {
                 </div>
               )}
 
-              <Button
-                onClick={() => startConversation(acharya.user_id)}
-                className="w-full"
-                size="sm"
-              >
-                <MessageCircle className="w-4 h-4 mr-2" />
-                Start Conversation
-              </Button>
+              <ConnectionRequestButton
+                acharyaId={acharya.user_id}
+                currentUserId={currentUserId || ''}
+                existingRequest={connectionStatuses[acharya.user_id]}
+              />
             </CardContent>
           </Card>
         ))}

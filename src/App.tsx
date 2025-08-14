@@ -9,6 +9,7 @@ import { supabase } from "@/integrations/supabase/client";
 import Index from "./pages/Index";
 import NotFound from "./pages/NotFound";
 import Conversations from "./pages/Conversations";
+import ConnectionRequests from "./pages/ConnectionRequests";
 import Chat from "./pages/Chat";
 import { AuthPage } from "./components/auth/AuthPage";
 import { ResetPassword } from "./components/auth/ResetPassword";
@@ -69,6 +70,7 @@ const App = () => {
             <Routes>
               <Route path="/" element={<Index />} />
               <Route path="/acharyas" element={<AcharyaSearch />} />
+              <Route path="/connection-requests" element={<ConnectionRequests />} />
               <Route path="/conversations" element={<Conversations />} />
               <Route path="/chat/:conversationId" element={<Chat />} />
               <Route path="/reset-password" element={<ResetPassword />} />
