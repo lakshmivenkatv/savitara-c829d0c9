@@ -452,95 +452,103 @@ class IndicNLPEngine {
   // Enhanced answer extraction from documents
   private findBestAnswer(question: string, documentContext: string[], language: string): string | null {
     console.log("Looking for best answer in", documentContext.length, "chunks");
+    console.log("Question:", question);
     
     const questionWords = question.toLowerCase().split(/\s+/).filter(w => w.length > 2);
+    console.log("Question words:", questionWords);
+    
     let bestMatch = '';
     let bestScore = 0;
-    let allMatches: string[] = [];
     
+    // Try to find question-answer pairs in the JSON structure
     for (const context of documentContext) {
-      // First, look for "answer:" entries directly
-      if (context.includes('answer:')) {
-        const lines = context.split('\n');
-        for (const line of lines) {
-          if (line.trim().startsWith('answer:')) {
-            const answer = line.replace('answer:', '').trim();
-            if (answer.length > 10 && !answer.toLowerCase().includes('question')) {
-              console.log("Found direct answer:", answer.substring(0, 50));
-              allMatches.push(answer);
-              if (answer.length > bestMatch.length) {
-                bestMatch = answer;
-                bestScore = 100; // High score for direct answers
+      console.log("Processing context chunk:", context.substring(0, 200));
+      
+      // Look for question-answer pairs in JSON format
+      const lines = context.split('\n').map(line => line.trim()).filter(line => line.length > 0);
+      
+      for (let i = 0; i < lines.length; i++) {
+        const line = lines[i];
+        
+        // Found a question line
+        if (line.toLowerCase().includes('question:')) {
+          const questionText = line.replace(/.*question:\s*/i, '').trim();
+          console.log("Found question:", questionText);
+          
+          // Calculate similarity between user question and found question
+          const questionScore = this.calculateQuestionSimilarity(question, questionText);
+          console.log("Question similarity score:", questionScore);
+          
+          if (questionScore > 0.3) { // Threshold for question similarity
+            // Look for the corresponding answer
+            for (let j = i + 1; j < Math.min(i + 10, lines.length); j++) {
+              const answerLine = lines[j];
+              if (answerLine.toLowerCase().includes('answer:')) {
+                const answer = answerLine.replace(/.*answer:\s*/i, '').trim();
+                if (answer.length > 10) {
+                  console.log("Found matching answer:", answer.substring(0, 100));
+                  
+                  if (questionScore > bestScore) {
+                    bestScore = questionScore;
+                    bestMatch = answer;
+                  }
+                  break;
+                }
               }
             }
           }
         }
       }
       
-      // Check for key-value pairs (JSON data)
-      if (context.includes(':')) {
-        const lines = context.split('\n');
-        for (const line of lines) {
-          if (line.includes(':')) {
-            const [key, value] = line.split(':').map(s => s.trim());
-            if (key && value && value.length > 5) {
-              
-              // Skip if this looks like a question entry
-              if (key.toLowerCase().includes('question') || 
-                  value.toLowerCase().startsWith('what') || 
-                  value.toLowerCase().startsWith('how') ||
-                  value.toLowerCase().startsWith('why') ||
-                  value.toLowerCase().startsWith('when') ||
-                  value.toLowerCase().startsWith('where') ||
-                  key.toLowerCase().includes('category')) {
-                console.log("Skipping question/category entry:", key, "->", value.substring(0, 30));
-                continue;
-              }
-              
-              const keyScore = questionWords.filter(word => 
-                key.toLowerCase().includes(word) || word.includes(key.toLowerCase().substring(0, Math.max(3, key.length - 2)))
-              ).length;
-              
-              if (keyScore > bestScore) {
-                bestScore = keyScore;
-                bestMatch = value.replace(/["\[\]{}]/g, '').trim();
-                console.log("New best match from key-value:", key, "->", bestMatch.substring(0, 50));
-              }
+      // Fallback: Look for direct answer patterns if no Q&A pairs found
+      if (bestScore === 0) {
+        const answerLines = lines.filter(line => 
+          line.toLowerCase().startsWith('answer:') && 
+          !line.toLowerCase().includes('question')
+        );
+        
+        for (const answerLine of answerLines) {
+          const answer = answerLine.replace(/.*answer:\s*/i, '').trim();
+          if (answer.length > 10) {
+            const keywordScore = questionWords.filter(word => 
+              answer.toLowerCase().includes(word)
+            ).length / questionWords.length;
+            
+            if (keywordScore > bestScore) {
+              bestScore = keywordScore;
+              bestMatch = answer;
+              console.log("Found keyword-based answer:", answer.substring(0, 100));
             }
           }
-        }
-      }
-      
-      // Check for sentence matches (but skip questions)
-      const sentences = context.split(/[.!?]+/).filter(s => s.trim().length > 10);
-      for (const sentence of sentences) {
-        const trimmedSentence = sentence.trim();
-        
-        // Skip sentences that look like questions
-        if (trimmedSentence.toLowerCase().startsWith('question:') ||
-            trimmedSentence.toLowerCase().startsWith('what') ||
-            trimmedSentence.toLowerCase().startsWith('how') ||
-            trimmedSentence.toLowerCase().startsWith('why') ||
-            trimmedSentence.toLowerCase().startsWith('when') ||
-            trimmedSentence.toLowerCase().startsWith('where') ||
-            trimmedSentence.includes('?')) {
-          console.log("Skipping question sentence:", trimmedSentence.substring(0, 30));
-          continue;
-        }
-        
-        const sentenceScore = questionWords.filter(word => 
-          sentence.toLowerCase().includes(word)
-        ).length;
-        
-        if (sentenceScore > bestScore && trimmedSentence.length > 20) {
-          bestScore = sentenceScore;
-          bestMatch = trimmedSentence;
-          console.log("New best match from sentence:", bestMatch.substring(0, 50));
         }
       }
     }
     
-    return bestMatch.length > 15 ? bestMatch : null;
+    console.log("Final best match:", bestMatch.substring(0, 100), "Score:", bestScore);
+    return bestMatch.length > 10 ? bestMatch : null;
+  }
+
+  // Calculate similarity between two questions
+  private calculateQuestionSimilarity(userQuestion: string, documentQuestion: string): number {
+    const userWords = userQuestion.toLowerCase().split(/\s+/).filter(w => w.length > 2);
+    const docWords = documentQuestion.toLowerCase().split(/\s+/).filter(w => w.length > 2);
+    
+    let matchCount = 0;
+    for (const userWord of userWords) {
+      for (const docWord of docWords) {
+        // Exact match
+        if (userWord === docWord) {
+          matchCount += 2;
+        }
+        // Partial match (one word contains the other)
+        else if (userWord.includes(docWord) || docWord.includes(userWord)) {
+          matchCount += 1;
+        }
+      }
+    }
+    
+    const maxWords = Math.max(userWords.length, docWords.length);
+    return maxWords > 0 ? matchCount / (maxWords * 2) : 0;
   }
 
   private extractMainTopic(message: string): string {
