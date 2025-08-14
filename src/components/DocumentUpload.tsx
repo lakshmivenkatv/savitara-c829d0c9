@@ -2,9 +2,10 @@ import React, { useCallback, useState } from 'react';
 import { useDropzone } from 'react-dropzone';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Upload, FileText, X, FileSpreadsheet, FileJson, Loader2 } from 'lucide-react';
+import { Upload, FileText, X, FileSpreadsheet, FileJson, Loader2, CheckCircle } from 'lucide-react';
 import { useToast } from '@/components/ui/use-toast';
 import { supabase } from '@/integrations/supabase/client';
+import { Alert, AlertDescription } from '@/components/ui/alert';
 import * as XLSX from 'xlsx';
 
 interface DocumentUploadProps {
@@ -26,6 +27,8 @@ export const DocumentUpload: React.FC<DocumentUploadProps> = ({
   const { toast } = useToast();
   const [isProcessing, setIsProcessing] = useState(false);
   const [uploadedDocuments, setUploadedDocuments] = useState<UploadedDocument[]>([]);
+  const [showSuccess, setShowSuccess] = useState(false);
+  const [processedFileName, setProcessedFileName] = useState('');
 
   // Load user's documents on component mount
   React.useEffect(() => {
@@ -58,45 +61,51 @@ export const DocumentUpload: React.FC<DocumentUploadProps> = ({
   };
 
   const onDrop = useCallback(async (acceptedFiles: File[]) => {
-    const supportedFiles = acceptedFiles.filter(file => 
-      file.type === 'application/pdf' || 
+    // Only allow single file
+    if (acceptedFiles.length > 1) {
+      toast({
+        title: "Multiple files not allowed",
+        description: "Please upload only one file at a time",
+        variant: "destructive"
+      });
+      return;
+    }
+
+    const file = acceptedFiles[0];
+    if (!file) return;
+
+    // Check if file type is supported
+    const isSupported = file.type === 'application/pdf' || 
       file.type === 'application/json' ||
       file.type === 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' ||
       file.type === 'application/vnd.ms-excel' ||
       file.name.endsWith('.json') ||
       file.name.endsWith('.xlsx') ||
-      file.name.endsWith('.xls')
-    );
+      file.name.endsWith('.xls');
     
-    if (supportedFiles.length !== acceptedFiles.length) {
+    if (!isSupported) {
       toast({
-        title: "Some files not supported",
+        title: "File not supported",
         description: "Only PDF, JSON, Excel (.xlsx, .xls) files are supported",
         variant: "destructive"
       });
+      return;
     }
-
-    if (supportedFiles.length === 0) return;
 
     setIsProcessing(true);
 
     try {
-      for (const file of supportedFiles) {
-        await processFile(file);
-      }
-      
+      await processFile(file);
       await loadUserDocuments();
       onDocumentsProcessed();
       
-      toast({
-        title: "Documents processed",
-        description: `${supportedFiles.length} file(s) uploaded and processed successfully`,
-      });
+      setProcessedFileName(file.name);
+      setShowSuccess(true);
     } catch (error) {
-      console.error('Failed to process files:', error);
+      console.error('Failed to process file:', error);
       toast({
         title: "Processing failed",
-        description: "Some files couldn't be processed",
+        description: "File couldn't be processed",
         variant: "destructive"
       });
     } finally {
@@ -231,7 +240,7 @@ export const DocumentUpload: React.FC<DocumentUploadProps> = ({
       'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet': ['.xlsx'],
       'application/vnd.ms-excel': ['.xls']
     },
-    multiple: true,
+    multiple: false,
     disabled: isProcessing
   });
 
@@ -267,9 +276,9 @@ export const DocumentUpload: React.FC<DocumentUploadProps> = ({
                 <p>Drop files here...</p>
               ) : (
                 <div>
-                  <p>Drag & drop PDF, JSON, or Excel files here, or click to select</p>
+                  <p>Drag & drop a PDF, JSON, or Excel file here, or click to select</p>
                   <p className="text-sm text-muted-foreground mt-1">
-                    Upload documents to enhance the AI knowledge base with your data
+                    Upload one document to enhance the AI knowledge base with your data
                   </p>
                 </div>
               )}
@@ -306,6 +315,25 @@ export const DocumentUpload: React.FC<DocumentUploadProps> = ({
               </div>
             ))}
           </div>
+        )}
+
+        {showSuccess && (
+          <Alert className="bg-green-50 border-green-200 dark:bg-green-950 dark:border-green-800">
+            <CheckCircle className="h-4 w-4 text-green-600 dark:text-green-400" />
+            <AlertDescription className="flex items-center justify-between">
+              <span className="text-green-800 dark:text-green-200">
+                File "{processedFileName}" uploaded and processed successfully!
+              </span>
+              <Button 
+                size="sm" 
+                variant="outline"
+                className="ml-4 border-green-200 text-green-800 hover:bg-green-100 dark:border-green-700 dark:text-green-200 dark:hover:bg-green-900"
+                onClick={() => setShowSuccess(false)}
+              >
+                OK
+              </Button>
+            </AlertDescription>
+          </Alert>
         )}
       </CardContent>
     </Card>
