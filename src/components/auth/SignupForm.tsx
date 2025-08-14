@@ -27,7 +27,20 @@ export const SignupForm = () => {
     e.preventDefault();
     setIsLoading(true);
 
+    // Validate required fields
+    if (!formData.email || !formData.password || !formData.fullName || !formData.userType || !formData.sampradaya) {
+      toast({
+        title: "Error",
+        description: "Please fill in all required fields",
+        variant: "destructive",
+      });
+      setIsLoading(false);
+      return;
+    }
+
     try {
+      console.log('Attempting signup with:', { email: formData.email, fullName: formData.fullName, userType: formData.userType });
+      
       const { data: authData, error: authError } = await supabase.auth.signUp({
         email: formData.email,
         password: formData.password,
@@ -48,6 +61,8 @@ export const SignupForm = () => {
         },
       });
 
+      console.log('Signup response:', { data: authData, error: authError });
+
       if (authError) throw authError;
 
       toast({
@@ -55,6 +70,7 @@ export const SignupForm = () => {
         description: "Account created successfully! Please check your email for verification.",
       });
     } catch (error: any) {
+      console.error('Signup error:', error);
       toast({
         title: "Error",
         description: error.message || "Failed to create account",
