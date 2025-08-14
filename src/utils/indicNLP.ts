@@ -197,27 +197,39 @@ class IndicNLPEngine {
       
       const { documentProcessor } = await import('./documentProcessor');
       
+      // Load documents from database first
+      await documentProcessor.loadFromDatabase();
+      
       // Check if we have any documents uploaded
       const documentStats = documentProcessor.getDocumentStats();
       console.log("Document stats:", documentStats);
       
       if (documentStats.totalChunks > 0) {
         console.log("Documents available, searching for relevant content...");
-        const documentContext = documentProcessor.findRelevantContext(message, config.language, 3);
+        
+        // Get more chunks for better search coverage
+        const documentContext = documentProcessor.findRelevantContext(message, config.language, 10);
         console.log("Found document context:", documentContext.length, "chunks");
         
         if (documentContext.length > 0) {
-          // Try to find a direct answer in the documents
+          // Try to find a comprehensive answer in the documents
           const directAnswer = this.findBestAnswer(message, documentContext, config.language);
-          if (directAnswer && directAnswer.length > 15) {
-            console.log("Found direct answer:", directAnswer.substring(0, 100));
-            return directAnswer;
+          if (directAnswer && directAnswer.length > 10) {
+            console.log("Found answer in uploaded documents:", directAnswer.substring(0, 100));
+            return this.formatDocumentAnswer(directAnswer, config.language);
+          }
+          
+          // If no direct answer but we have relevant context, create a response based on document content
+          const contextualAnswer = this.extractContextualAnswer(message, documentContext, config.language);
+          if (contextualAnswer && contextualAnswer.length > 15) {
+            console.log("Created contextual answer from documents:", contextualAnswer.substring(0, 100));
+            return contextualAnswer;
           }
         }
       }
       
-      // No documents or no relevant content found - search general knowledge
-      console.log("No relevant documents found, searching general knowledge...");
+      // Only fall back to general knowledge if no documents are available or no relevant content found
+      console.log("No relevant content found in uploaded documents, searching general knowledge...");
       return await this.searchGeneralKnowledge(message, config.language);
       
     } catch (error) {
@@ -437,13 +449,14 @@ class IndicNLPEngine {
     return contexts[language] || contexts.english;
   }
 
-  // Simplified direct answer extraction
+  // Enhanced answer extraction from documents
   private findBestAnswer(question: string, documentContext: string[], language: string): string | null {
     console.log("Looking for best answer in", documentContext.length, "chunks");
     
     const questionWords = question.toLowerCase().split(/\s+/).filter(w => w.length > 2);
     let bestMatch = '';
     let bestScore = 0;
+    let allMatches: string[] = [];
     
     for (const context of documentContext) {
       // Check for key-value pairs first (JSON data)
@@ -577,6 +590,45 @@ class IndicNLPEngine {
     };
     
     return responses[language] || responses.english;
+  }
+
+  private formatDocumentAnswer(answer: string, language: string): string {
+    // Add appropriate prefix based on language
+    const prefixes: Record<string, string> = {
+      hindi: "अपलोड किए गए दस्तावेजों के अनुसार: ",
+      marathi: "अपलोड केलेल्या कागदपत्रांनुसार: ",
+      english: "According to the uploaded documents: ",
+      sanskrit: "प्रदत्तग्रन्थेषु अनुसारेण: ",
+      telugu: "అప్‌లోడ్ చేసిన పత్రాల ప్రకారం: ",
+      kannada: "ಅಪ್‌ಲೋಡ್ ಮಾಡಿದ ದಾಖಲೆಗಳ ಪ್ರಕಾರ: "
+    };
+    
+    const prefix = prefixes[language] || prefixes.english;
+    return prefix + answer;
+  }
+
+  private extractContextualAnswer(question: string, documentContext: string[], language: string): string | null {
+    console.log("Extracting contextual answer from documents");
+    
+    // Combine relevant contexts into a comprehensive response
+    const relevantContent = documentContext.slice(0, 5).join(' ').replace(/["\[\]{}]/g, '').trim();
+    
+    if (relevantContent.length > 50) {
+      // Create a contextual response based on document content
+      const prefixes: Record<string, string> = {
+        hindi: "दस्तावेजों में उपलब्ध जानकारी के आधार पर: ",
+        marathi: "कागदपत्रांमध्ये उपलब्ध माहितीच्या आधारावर: ",
+        english: "Based on the available information in documents: ",
+        sanskrit: "ग्रन्थेषु प्राप्तसूचनायाः आधारे: ",
+        telugu: "పత్రాలలో అందుబాటులో ఉన్న సమాచారం ఆధారంగా: ",
+        kannada: "ದಾಖಲೆಗಳಲ್ಲಿ ಲಭ್ಯವಿರುವ ಮಾಹಿತಿಯ ಆಧಾರದ ಮೇಲೆ: "
+      };
+      
+      const prefix = prefixes[language] || prefixes.english;
+      return prefix + relevantContent.substring(0, 400) + (relevantContent.length > 400 ? "..." : "");
+    }
+    
+    return null;
   }
 
   private getFallbackResponse(language: string): string {
