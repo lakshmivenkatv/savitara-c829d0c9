@@ -702,7 +702,10 @@ class IndicNLPEngine {
     const fallbacks: Record<string, string> = {
       hindi: "तकनीकी त्रुटि हुई है। कृपया फिर से प्रयास करें।",
       marathi: "तांत्रिक त्रुटी झाली आहे. कृपया पुन्हा प्रयत्न करा.",
-      english: "A technical error occurred. Please try again."
+      english: "A technical error occurred. Please try again.",
+      sanskrit: "तकनीकं दोषः अभवत्। कृपया पुनः प्रयतन्तु।",
+      telugu: "సాంకేతిక లోపం సంభవించింది. దయచేసి మళ్లీ ప్రయత్నించండి.",
+      kannada: "ತಾಂತ್ರಿಕ ದೋಷ ಸಂಭವಿಸಿದೆ. ದಯವಿಟ್ಟು ಮತ್ತೆ ಪ್ರಯತ್ನಿಸಿ."
     };
     
     return fallbacks[language] || fallbacks.english;

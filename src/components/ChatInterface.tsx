@@ -977,12 +977,15 @@ Please feel free to ask anything related to Hindu Dharma, and I'll do my best to
 
       if (engine === 'indic') {
         // Use Indic NLP engine
+        console.log("🔍 Using Indic NLP engine with language:", language);
         assistantContent = await indicNLP.generateResponse(currentInput, {
           language,
           context: messages.slice(-2).map(m => `${m.role}: ${m.content}`).join('\n')
         });
+        console.log("📝 Indic NLP response:", assistantContent.substring(0, 100));
       } else {
         // Use Azure OpenAI
+        console.log("🔍 Using Azure OpenAI with language:", language);
         const { data, error } = await supabase.functions.invoke('azure-chat', {
           body: {
             messages: [{ role: 'user', content: currentInput }],
@@ -992,6 +995,7 @@ Please feel free to ask anything related to Hindu Dharma, and I'll do my best to
 
         if (error) throw error;
         assistantContent = data.message;
+        console.log("📝 Azure OpenAI response:", assistantContent.substring(0, 100));
       }
 
       const assistantMessage: Message = {
