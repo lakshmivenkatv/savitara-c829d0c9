@@ -293,7 +293,14 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      can_view_pending_profile: {
+        Args: { _profile_user_id: string; _viewer_id: string }
+        Returns: boolean
+      }
+      has_active_connection: {
+        Args: { _profile_user_id: string; _viewer_id: string }
+        Returns: boolean
+      }
     }
     Enums: {
       sampradaya: "madhva" | "vaishnava" | "smarta"
