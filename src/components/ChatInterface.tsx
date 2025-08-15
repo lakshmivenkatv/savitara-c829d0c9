@@ -117,6 +117,13 @@ export const ChatInterface = ({
       'ramayana', 'mahabharata', 'bhagavad', 'gita', 'purana', 'puranas',
       'upanishad', 'upanishads', 'smriti', 'shruti', 'agama', 'tantra',
       
+      // Vedic hymns and mantras
+      'purusha', 'suktam', 'sukta', 'hymn', 'shri', 'rudram', 'chamakam',
+      'gayatri', 'mahamrityunjaya', 'vishnu', 'sahasranama', 'lalita',
+      'sahasranama', 'hanuman', 'chalisa', 'aditya', 'hridayam', 'durga',
+      'kavach', 'stotram', 'stotra', 'ashtak', 'ashtakam', 'aarti', 'bhajan',
+      'mantra', 'shloka', 'sloka', 'verse', 'chant', 'recitation', 'parayana',
+      
       // Deities and divine
       'krishna', 'rama', 'shiva', 'vishnu', 'brahma', 'devi', 'ganesha',
       'hanuman', 'lakshmi', 'saraswati', 'durga', 'kali', 'parvati',
