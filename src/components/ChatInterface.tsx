@@ -221,36 +221,42 @@ export const ChatInterface = ({
   };
 
   // Enhanced greeting detection function
-  const detectGreeting = (text: string): { isGreeting: boolean; language: string; type: 'casual' | 'respectful' | 'spiritual' } => {
+  const detectGreeting = (text: string): { isGreeting: boolean; language: string; type: 'casual' | 'respectful' | 'spiritual' | 'gratitude' } => {
     const normalizedText = normalizeText(text);
     
     const greetingPatterns = {
       english: {
         casual: ['hi', 'hello', 'hey', 'good morning', 'good afternoon', 'good evening'],
         respectful: ['namaste', 'namaskar', 'pranaam', 'greetings'],
-        spiritual: ['om', 'aum', 'jai shri krishna', 'jai shri ram', 'hare krishna', 'radhe radhe']
+        spiritual: ['om', 'aum', 'jai shri krishna', 'jai shri ram', 'hare krishna', 'radhe radhe'],
+        gratitude: ['thank you', 'thanks', 'thank u', 'thankyou', 'ty', 'appreciate', 'grateful']
       },
       hindi: {
         casual: ['हैलो', 'हाय', 'हाई', 'सुप्रभात', 'शुभ संध्या'],
         respectful: ['नमस्ते', 'नमस्कार', 'प्रणाम', 'आदाब'],
-        spiritual: ['ॐ', 'ओम्', 'जय श्री कृष्ण', 'जय श्री राम', 'हरे कृष्ण', 'राधे राधे']
+        spiritual: ['ॐ', 'ओम्', 'जय श्री कृष्ण', 'जय श्री राम', 'हरे कृष्ण', 'राधे राधे'],
+        gratitude: ['धन्यवाद', 'शुक्रिया', 'आभार', 'कृतज्ञ', 'अनुग्रहीत']
       },
       marathi: {
         casual: ['हॅलो', 'नमस्कार'],
         respectful: ['नमस्कार', 'प्रणाम'],
-        spiritual: ['जय श्री कृष्ण', 'जय श्री राम', 'गणपती बाप्पा मोरया']
+        spiritual: ['जय श्री कृष्ण', 'जय श्री राम', 'गणपती बाप्पा मोरया'],
+        gratitude: ['धन्यवाद', 'आभार', 'कृतज्ञता']
       },
       sanskrit: {
         respectful: ['नमस्ते', 'नमस्कारः', 'प्रणामः'],
-        spiritual: ['ॐ', 'हरिॐ', 'ॐ नमः शिवाय', 'ॐ गं गणपतये नमः']
+        spiritual: ['ॐ', 'हरिॐ', 'ॐ नमः शिवाय', 'ॐ गं गणपतये नमः'],
+        gratitude: ['धन्यवादः', 'आभारः', 'कृतज्ञता', 'अनुगृहीतः']
       },
       telugu: {
         respectful: ['నమస్తే', 'నమస్కారం', 'వందనాలు'],
-        spiritual: ['జై శ్రీ కృష్ణ', 'జై శ్రీ రామ', 'హరే కృష్ణ']
+        spiritual: ['జై శ్రీ కృష్ణ', 'జై శ్రీ రామ', 'హరే కృష్ణ'],
+        gratitude: ['ధన్యవాదాలు', 'కృతజ్ఞతలు', 'ఆభారం']
       },
       kannada: {
         respectful: ['ನಮಸ್ತೆ', 'ನಮಸ್ಕಾರ', 'ವಂದನೆಗಳು'],
-        spiritual: ['ಜೈ ಶ್ರೀ ಕೃಷ್ಣ', 'ಜೈ ಶ್ರೀ ರಾಮ', 'ಹರೇ ಕೃಷ್ಣ']
+        spiritual: ['ಜೈ ಶ್ರೀ ಕೃಷ್ಣ', 'ಜೈ ಶ್ರೀ ರಾಮ', 'ಹರೇ ಕೃಷ್ಣ'],
+        gratitude: ['ಧನ್ಯವಾದಗಳು', 'ಕೃತಜ್ಞತೆ', 'ಆಭಾರ']
       }
     };
 
@@ -263,14 +269,14 @@ export const ChatInterface = ({
             return { 
               isGreeting: true, 
               language: lang, 
-              type: type as 'casual' | 'respectful' | 'spiritual' 
+              type: type as 'casual' | 'respectful' | 'spiritual' | 'gratitude'
             };
           }
         }
       }
     }
     
-    return { isGreeting: false, language: 'unknown', type: 'casual' };
+    return { isGreeting: false, language: 'unknown', type: 'casual' as 'casual' | 'respectful' | 'spiritual' | 'gratitude' };
   };
 
   // Function to validate if question is related to Hindu Dharma
@@ -671,6 +677,25 @@ How may I guide you on your spiritual journey today? 🕉️`,
 
 अद्य अहं भवतः आध्यात्मिक यात्रायां कथं मार्गदर्शनं करोमि? 🕉️`
             },
+            gratitude: {
+              english: `🙏 You're most welcome! It brings me joy to assist you on your spiritual journey.
+
+May your path be blessed with wisdom and divine grace. If you have any more questions about Hindu Dharma, Vedic traditions, or spiritual practices, I'm here to help.
+
+May the divine light guide you always! 🕉️✨`,
+
+              hindi: `🙏 आपका बहुत स्वागत है! आपकी आध्यात्मिक यात्रा में सहायता करना मुझे खुशी देता है।
+
+आपका मार्ग ज्ञान और दिव्य कृपा से भरा हो। यदि आपके हिंदू धर्म, वैदिक परंपराओं, या आध्यात्मिक प्रथाओं के बारे में कोई और प्रश्न हैं, तो मैं यहां सहायता करने के लिए हूं।
+
+दिव्य प्रकाश सदा आपका मार्गदर्शन करे! 🕉️✨`,
+
+              sanskrit: `🙏 भवतः स्वागतम्! भवतः आध्यात्मिक यात्रायां सहायतार्थं मह्यं आनन्दः।
+
+भवतः मार्गः ज्ञानेन दिव्यकृपया च युक्तः भवतु। यदि हिन्दू धर्मे, वैदिक परम्परासु, आध्यात्मिक प्रथासु वा भवतः काश्चित् प्रश्नाः सन्ति तर्हि अहं सहायतार्थं अत्र अस्मि।
+
+दिव्यं ज्योतिः सदा भवतः मार्गदर्शनं करोतु! 🕉️✨`
+            },
             general: {
               english: `🙏 Namaste! Welcome to Savitara, your Hindu Dharma AI Assistant.
 
@@ -686,7 +711,14 @@ What would you like to learn about today? 🕉️`,
             }
           };
 
-          const category = greetingData.type === 'spiritual' ? 'spiritual' : 'general';
+          // Determine response category based on greeting type
+          let category = 'general';
+          if (greetingData.type === 'spiritual') {
+            category = 'spiritual';
+          } else if (greetingData.type === 'gratitude') {
+            category = 'gratitude';
+          }
+          
           const langKey = lang === 'sanskrit' ? 'sanskrit' : (lang === 'hindi' ? 'hindi' : 'english');
           
           return responses[category][langKey] || responses.general.english;
