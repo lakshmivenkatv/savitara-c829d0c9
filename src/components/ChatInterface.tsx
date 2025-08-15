@@ -599,12 +599,18 @@ Please feel free to ask anything related to Hindu Dharma, and I'll do my best to
               autoComplete="off"
               autoCapitalize="sentences"
               autoCorrect="on"
+              enterKeyHint="send"
+              inputMode="text"
             />
             <Button 
               type="submit"
               disabled={isLoading || !input.trim()}
-              className={`${isMobile ? 'h-10 px-3 min-w-[44px] touch-manipulation' : ''}`}
-              style={{ WebkitTapHighlightColor: 'transparent' }}
+              className={`${isMobile ? 'h-10 px-3 min-w-[44px] touch-manipulation active:scale-95' : ''}`}
+              style={{ 
+                WebkitTapHighlightColor: 'transparent',
+                touchAction: 'manipulation'
+              }}
+              onTouchStart={() => {}} // Ensures touch events are properly handled
             >
               <Send className="w-4 h-4" />
             </Button>
