@@ -168,13 +168,13 @@ export const ChatInterface = () => {
         <DocumentUpload 
           onDocumentsProcessed={handleDocumentsProcessed}
         />
-        <ScrollArea className={`flex-1 ${isMobile ? 'pr-2' : 'pr-4'}`} ref={scrollAreaRef}>
-          <div className="space-y-4">
+        <ScrollArea className={`flex-1 ${isMobile ? 'pr-2' : 'pr-4'} w-full overflow-hidden`} ref={scrollAreaRef}>
+          <div className="space-y-4 w-full max-w-full">
             {messages.length === 0 && (
-              <div className={`text-center ${isMobile ? 'py-4' : 'py-8'} text-muted-foreground`}>
+              <div className={`text-center ${isMobile ? 'py-4 px-2' : 'py-8'} text-muted-foreground w-full`}>
                 <Bot className={`${isMobile ? 'w-8 h-8' : 'w-12 h-12'} mx-auto ${isMobile ? 'mb-2' : 'mb-4'} text-orange-500`} />
-                <p className={`${isMobile ? 'text-base' : 'text-lg'}`}>Welcome to the Hindu Dharma AI Assistant</p>
-                <p className={`${isMobile ? 'text-sm px-4' : ''}`}>Ask questions about Vedic traditions, rituals, sampradayas, and more.</p>
+                <p className={`${isMobile ? 'text-base' : 'text-lg'} break-words`}>Welcome to the Hindu Dharma AI Assistant</p>
+                <p className={`${isMobile ? 'text-sm px-2' : ''} break-words max-w-full`}>Ask questions about Vedic traditions, rituals, sampradayas, and more.</p>
               </div>
             )}
             
