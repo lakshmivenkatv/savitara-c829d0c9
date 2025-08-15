@@ -372,13 +372,32 @@ export const ChatInterface = ({
     // Normalize the question for better Indic script matching
     const normalizedQuestion = normalizeText(question);
     
+    console.log('🔍 Validation Debug:', {
+      originalQuestion: question,
+      normalizedQuestion: normalizedQuestion,
+      questionLength: question.length,
+      containsTeluguChars: /[\u0C00-\u0C7F]/.test(question)
+    });
+    
     // Check if question contains any Hindu Dharma related keywords
     const hasKeywords = hinduDharmaKeywords.some(keyword => {
       const normalizedKeyword = normalizeText(keyword);
-      return normalizedQuestion.includes(normalizedKeyword) || 
-             normalizedQuestion.includes(keyword) || // fallback for exact match
-             question.includes(keyword); // direct match for Indic scripts
+      const match1 = normalizedQuestion.includes(normalizedKeyword);
+      const match2 = normalizedQuestion.includes(keyword);
+      const match3 = question.includes(keyword);
+      
+      if (match1 || match2 || match3) {
+        console.log('✅ Keyword match found:', {
+          keyword,
+          normalizedKeyword,
+          match1, match2, match3
+        });
+        return true;
+      }
+      return false;
     });
+    
+    console.log('🎯 Keywords validation result:', hasKeywords);
     
     // Additional pattern matching for Indian cultural context
     const culturalPatterns = [
