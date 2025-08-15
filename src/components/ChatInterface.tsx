@@ -125,7 +125,8 @@ export const ChatInterface = ({
       // Festivals and observances
       'diwali', 'holi', 'navratri', 'dussehra', 'janmashtami', 'shivaratri',
       'karva', 'chauth', 'ekadashi', 'amavasya', 'purnima', 'vrat', 'vratam',
-      'chaturmasya', 'caturmasya',
+      'chaturmasya', 'caturmasya', 'sankranti', 'makar', 'sankrant', 'uttarayan',
+      'pongal', 'bihu', 'baisakhi', 'onam', 'gudi', 'padwa', 'ugadi',
       
       // Philosophical concepts
       'karma', 'moksha', 'samsara', 'atman', 'brahman', 'ahimsa',
