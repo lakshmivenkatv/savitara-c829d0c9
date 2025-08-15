@@ -4,10 +4,16 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Textarea } from '@/components/ui/textarea';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
+import { CheckCircle, Mail, ArrowLeft } from 'lucide-react';
 
-export const SignupForm = () => {
+interface SignupFormProps {
+  onSwitchToLogin?: () => void;
+}
+
+export const SignupForm = ({ onSwitchToLogin }: SignupFormProps) => {
   const [formData, setFormData] = useState({
     email: '',
     password: '',
@@ -21,6 +27,8 @@ export const SignupForm = () => {
     languages: ['english'] as string[],
   });
   const [isLoading, setIsLoading] = useState(false);
+  const [registrationComplete, setRegistrationComplete] = useState(false);
+  const [userEmail, setUserEmail] = useState('');
   const { toast } = useToast();
 
   const handleSignup = async (e: React.FormEvent) => {
@@ -65,20 +73,89 @@ export const SignupForm = () => {
 
       if (authError) throw authError;
 
+      // Set success state and store email for confirmation
+      setUserEmail(formData.email);
+      setRegistrationComplete(true);
+      
       toast({
-        title: "Success",
-        description: "Account created successfully! Please check your email for verification.",
+        title: "Registration Successful!",
+        description: "Please check your email for verification.",
       });
     } catch (error: any) {
       console.error('Signup error:', error);
       toast({
-        title: "Error",
-        description: error.message || "Failed to create account",
+        title: "Registration Failed",
+        description: error.message || "Failed to create account. Please try again.",
         variant: "destructive",
       });
     } finally {
       setIsLoading(false);
     }
+  };
+
+  const handleConfirmAndProceed = () => {
+    // Switch to login tab and reset form
+    setRegistrationComplete(false);
+    setFormData({
+      email: '',
+      password: '',
+      fullName: '',
+      userType: '',
+      sampradaya: '',
+      location: '',
+      bio: '',
+      experienceYears: '',
+      specializations: [] as string[],
+      languages: ['english'] as string[],
+    });
+    
+    // Call the callback to switch to login tab
+    if (onSwitchToLogin) {
+      onSwitchToLogin();
+    }
+  };
+
+  // Show success confirmation screen
+  if (registrationComplete) {
+    return (
+      <div className="text-center space-y-6 py-6">
+        <div className="flex justify-center">
+          <div className="rounded-full bg-green-100 p-3">
+            <CheckCircle className="w-8 h-8 text-green-600" />
+          </div>
+        </div>
+        
+        <div className="space-y-2">
+          <h3 className="text-lg font-semibold text-foreground">
+            Registration Successful!
+          </h3>
+          <p className="text-sm text-muted-foreground">
+            We've sent a verification email to:
+          </p>
+          <p className="text-sm font-medium text-foreground bg-muted px-3 py-2 rounded-md inline-flex items-center gap-2">
+            <Mail className="w-4 h-4" />
+            {userEmail}
+          </p>
+        </div>
+        
+        <div className="space-y-3">
+          <p className="text-sm text-muted-foreground">
+            Please check your email and click the verification link to activate your account.
+          </p>
+          <p className="text-xs text-muted-foreground">
+            Don't see the email? Check your spam folder or contact support.
+          </p>
+        </div>
+        
+        <Button 
+          onClick={handleConfirmAndProceed}
+          className="w-full"
+          variant="default"
+        >
+          Continue to Login
+        </Button>
+      </div>
+    );
   };
 
   const updateFormData = (field: string, value: any) => {

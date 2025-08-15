@@ -58,7 +58,7 @@ export const AuthPage = () => {
                 </TabsContent>
                 
                 <TabsContent value="signup">
-                  <SignupForm />
+                  <SignupForm onSwitchToLogin={() => setEmailTab('login')} />
                 </TabsContent>
               </Tabs>
             </TabsContent>
