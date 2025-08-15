@@ -220,8 +220,70 @@ export const ChatInterface = ({
       .replace(/\s+/g, ' '); // Replace multiple spaces with single space
   };
 
+  // Enhanced greeting detection function
+  const detectGreeting = (text: string): { isGreeting: boolean; language: string; type: 'casual' | 'respectful' | 'spiritual' } => {
+    const normalizedText = normalizeText(text);
+    
+    const greetingPatterns = {
+      english: {
+        casual: ['hi', 'hello', 'hey', 'good morning', 'good afternoon', 'good evening'],
+        respectful: ['namaste', 'namaskar', 'pranaam', 'greetings'],
+        spiritual: ['om', 'aum', 'jai shri krishna', 'jai shri ram', 'hare krishna', 'radhe radhe']
+      },
+      hindi: {
+        casual: ['हैलो', 'हाय', 'हाई', 'सुप्रभात', 'शुभ संध्या'],
+        respectful: ['नमस्ते', 'नमस्कार', 'प्रणाम', 'आदाब'],
+        spiritual: ['ॐ', 'ओम्', 'जय श्री कृष्ण', 'जय श्री राम', 'हरे कृष्ण', 'राधे राधे']
+      },
+      marathi: {
+        casual: ['हॅलो', 'नमस्कार'],
+        respectful: ['नमस्कार', 'प्रणाम'],
+        spiritual: ['जय श्री कृष्ण', 'जय श्री राम', 'गणपती बाप्पा मोरया']
+      },
+      sanskrit: {
+        respectful: ['नमस्ते', 'नमस्कारः', 'प्रणामः'],
+        spiritual: ['ॐ', 'हरिॐ', 'ॐ नमः शिवाय', 'ॐ गं गणपतये नमः']
+      },
+      telugu: {
+        respectful: ['నమస్తే', 'నమస్కారం', 'వందనాలు'],
+        spiritual: ['జై శ్రీ కృష్ణ', 'జై శ్రీ రామ', 'హరే కృష్ణ']
+      },
+      kannada: {
+        respectful: ['ನಮಸ್ತೆ', 'ನಮಸ್ಕಾರ', 'ವಂದನೆಗಳು'],
+        spiritual: ['ಜೈ ಶ್ರೀ ಕೃಷ್ಣ', 'ಜೈ ಶ್ರೀ ರಾಮ', 'ಹರೇ ಕೃಷ್ಣ']
+      }
+    };
+
+    for (const [lang, types] of Object.entries(greetingPatterns)) {
+      for (const [type, patterns] of Object.entries(types)) {
+        for (const pattern of patterns) {
+          if (normalizedText.includes(pattern.toLowerCase()) || 
+              normalizedText === pattern.toLowerCase() ||
+              normalizedText.startsWith(pattern.toLowerCase())) {
+            return { 
+              isGreeting: true, 
+              language: lang, 
+              type: type as 'casual' | 'respectful' | 'spiritual' 
+            };
+          }
+        }
+      }
+    }
+    
+    return { isGreeting: false, language: 'unknown', type: 'casual' };
+  };
+
   // Function to validate if question is related to Hindu Dharma
   const isHinduDharmaRelated = (question: string): boolean => {
+    const normalizedQuestion = normalizeText(question);
+    
+    // Check if it's a greeting first
+    const greetingInfo = detectGreeting(normalizedQuestion);
+    if (greetingInfo.isGreeting) {
+      // Allow all greetings, especially spiritual ones
+      return true;
+    }
+
     const hinduDharmaKeywords = [
       // Core concepts - English
       'dharma', 'vedic', 'veda', 'vedas', 'hindu', 'hinduism', 'sanatan', 'sanatana',
@@ -499,8 +561,7 @@ export const ChatInterface = ({
       'तिरुपति', 'रामेश्वरम्', 'द्वारका', 'पुरी', 'बद्रीनाथ', 'केदारनाथ'
     ];
 
-    // Normalize the question for better Indic script matching
-    const normalizedQuestion = normalizeText(question);
+    // Use the already normalized question from above
     
     console.log('🔍 Validation Debug:', {
       originalQuestion: question,
@@ -560,7 +621,90 @@ export const ChatInterface = ({
     setIsLoading(true);
 
     try {
-      // Validate if question is related to Hindu Dharma
+      // Enhanced greeting detection and context handling
+      const greetingInfo = detectGreeting(currentInput);
+      
+      if (greetingInfo.isGreeting) {
+        // Generate appropriate greeting response based on context
+        const getGreetingResponse = (greetingData: typeof greetingInfo, lang: string): string => {
+          const responses = {
+            spiritual: {
+              english: `🙏 ${greetingData.type === 'spiritual' ? 'Divine greetings!' : 'Namaste!'} 
+
+I'm Savitara, your Hindu Dharma AI Assistant. I'm here to help you explore the vast wisdom of Sanatana Dharma.
+
+✨ Ask me about:
+• Vedic scriptures and teachings
+• Hindu festivals and their spiritual significance  
+• Daily rituals and spiritual practices
+• Sampradayas and ancient traditions
+• Dharmic philosophy and concepts
+• Sanskrit mantras and their meanings
+
+How may I guide you on your spiritual journey today? 🕉️`,
+
+              hindi: `🙏 ${greetingData.type === 'spiritual' ? 'दिव्य नमस्कार!' : 'नमस्ते!'}
+
+मैं सवितारा हूं, आपका हिंदू धर्म AI सहायक। मैं आपको सनातन धर्म के विशाल ज्ञान की खोज में सहायता करने के लिए यहां हूं।
+
+✨ मुझसे पूछें:
+• वैदिक शास्त्र और शिक्षाएं
+• हिंदू त्योहार और उनका आध्यात्मिक महत्व
+• दैनिक अनुष्ठान और आध्यात्मिक प्रथाएं
+• संप्रदाय और प्राचीन परंपराएं
+• धार्मिक दर्शन और अवधारणाएं
+• संस्कृत मंत्र और उनके अर्थ
+
+आज मैं आपकी आध्यात्मिक यात्रा में कैसे मार्गदर्शन कर सकता हूं? 🕉️`,
+
+              sanskrit: `🙏 ${greetingData.type === 'spiritual' ? 'दिव्यं नमस्कारम्!' : 'नमस्ते!'}
+
+अहं सवितारा अस्मि, भवतः हिन्दू धर्म AI सहायकः। सनातन धर्मस्य विशाल ज्ञान अन्वेषणे भवान् सहायतुं अत्र अस्मि।
+
+✨ मां पृच्छतु:
+• वैदिक शास्त्राणि च शिक्षाः
+• हिन्दू पर्वाणि च तेषां आध्यात्मिक महत्त्वम्
+• नित्य अनुष्ठानानि च आध्यात्मिक प्रथाः
+• सम्प्रदायाः च प्राचीन परम्पराः
+• धार्मिक दर्शनम् च अवधारणाः
+• संस्कृत मन्त्राः च तेषां अर्थाः
+
+अद्य अहं भवतः आध्यात्मिक यात्रायां कथं मार्गदर्शनं करोमि? 🕉️`
+            },
+            general: {
+              english: `🙏 Namaste! Welcome to Savitara, your Hindu Dharma AI Assistant.
+
+I'm here to help you explore the rich traditions and wisdom of Sanatana Dharma. Whether you're seeking knowledge about scriptures, festivals, rituals, or spiritual practices, I'm ready to assist you.
+
+What would you like to learn about today? 🕉️`,
+
+              hindi: `🙏 नमस्ते! सवितारा में आपका स्वागत है, आपका हिंदू धर्म AI सहायक।
+
+मैं यहां आपको सनातन धर्म की समृद्ध परंपराओं और ज्ञान की खोज में सहायता करने के लिए हूं। चाहे आप शास्त्रों, त्योहारों, अनुष्ठानों, या आध्यात्मिक प्रथाओं के बारे में ज्ञान चाह रहे हों, मैं आपकी सहायता करने के लिए तैयार हूं।
+
+आज आप क्या सीखना चाहेंगे? 🕉️`
+            }
+          };
+
+          const category = greetingData.type === 'spiritual' ? 'spiritual' : 'general';
+          const langKey = lang === 'sanskrit' ? 'sanskrit' : (lang === 'hindi' ? 'hindi' : 'english');
+          
+          return responses[category][langKey] || responses.general.english;
+        };
+
+        const botResponse: Message = {
+          id: (Date.now() + 1).toString(),
+          content: getGreetingResponse(greetingInfo, language),
+          role: 'assistant',
+          timestamp: new Date(),
+        };
+
+        setMessages(prev => [...prev, botResponse]);
+        setIsLoading(false);
+        return;
+      }
+
+      // Validate if question is related to Hindu Dharma (non-greetings)
       if (!isHinduDharmaRelated(currentInput)) {
         const getOffTopicResponse = (lang: string): string => {
           const responses = {
