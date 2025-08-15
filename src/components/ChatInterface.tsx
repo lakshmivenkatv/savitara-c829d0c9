@@ -105,6 +105,68 @@ export const ChatInterface = ({
     }
   }, [onDocumentsProcessed]);
 
+  // Function to validate if question is related to Hindu Dharma
+  const isHinduDharmaRelated = (question: string): boolean => {
+    const hinduDharmaKeywords = [
+      // Core concepts
+      'dharma', 'vedic', 'veda', 'vedas', 'hindu', 'hinduism', 'sanatan', 'sanatana',
+      'sampradaya', 'tradition', 'ritual', 'ceremony', 'puja', 'yajna', 'yagna',
+      'mantra', 'shloka', 'sanskrit', 'yoga', 'meditation', 'dhyana',
+      
+      // Scriptures and texts
+      'ramayana', 'mahabharata', 'bhagavad', 'gita', 'purana', 'puranas',
+      'upanishad', 'upanishads', 'smriti', 'shruti', 'agama', 'tantra',
+      
+      // Deities and divine
+      'krishna', 'rama', 'shiva', 'vishnu', 'brahma', 'devi', 'ganesha',
+      'hanuman', 'lakshmi', 'saraswati', 'durga', 'kali', 'parvati',
+      'indra', 'surya', 'bhagavan', 'bhagwan', 'ishwar', 'paramatma',
+      
+      // Festivals and observances
+      'diwali', 'holi', 'navratri', 'dussehra', 'janmashtami', 'shivaratri',
+      'karva', 'chauth', 'ekadashi', 'amavasya', 'purnima', 'vrat', 'vratam',
+      'chaturmasya', 'caturmasya',
+      
+      // Philosophical concepts
+      'karma', 'moksha', 'samsara', 'atman', 'brahman', 'ahimsa',
+      'dharana', 'samadhi', 'pranayama', 'asana', 'chakra',
+      
+      // Practices and customs
+      'ashram', 'guru', 'disciple', 'satsang', 'bhajan', 'kirtan',
+      'pilgrimage', 'tirtha', 'yatra', 'kumbh', 'ganga', 'ganges',
+      'ayurveda', 'jyotish', 'astrology', 'vastu',
+      
+      // Life stages and social
+      'grihastha', 'brahmachari', 'vanaprastha', 'sannyasa',
+      'varna', 'ashrama', 'samskar', 'sanskar',
+      
+      // Languages and cultural
+      'tamil', 'telugu', 'kannada', 'malayalam', 'bengali', 'gujarati',
+      'marathi', 'punjabi', 'oriya', 'assamese', 'hindi'
+    ];
+
+    const questionLower = question.toLowerCase();
+    
+    // Check if question contains any Hindu Dharma related keywords
+    const hasKeywords = hinduDharmaKeywords.some(keyword => 
+      questionLower.includes(keyword)
+    );
+    
+    // Additional pattern matching for Indian cultural context
+    const culturalPatterns = [
+      /\b(indian|bharat|hindustan)\s+(culture|tradition|custom|ritual)/i,
+      /\b(spiritual|religious)\s+(practice|tradition|custom)/i,
+      /\b(ancient|traditional)\s+(indian|hindu|vedic)/i,
+      /\b(temple|mandir|shrine)/i,
+      /\b(priest|pandit|acharya|swami|maharaj)/i,
+      /\b(blessing|bless|grace|divine)/i
+    ];
+    
+    const hasPatterns = culturalPatterns.some(pattern => pattern.test(question));
+    
+    return hasKeywords || hasPatterns;
+  };
+
   const sendMessage = async () => {
     if (!input.trim() || isLoading) return;
 
@@ -121,6 +183,32 @@ export const ChatInterface = ({
     setIsLoading(true);
 
     try {
+      // Validate if question is related to Hindu Dharma
+      if (!isHinduDharmaRelated(currentInput)) {
+        const offTopicResponse = `🙏 Namaste! I'm specifically designed to help with questions about Hindu Dharma, Vedic traditions, rituals, sampradayas, and related spiritual wisdom.
+
+Your question seems to be outside this scope. I'd be happy to help you with:
+• Vedic scriptures and their teachings
+• Hindu festivals and their significance  
+• Spiritual practices and rituals
+• Sampradayas and traditions
+• Dharmic philosophy and concepts
+• Sanskrit texts and mantras
+
+Please feel free to ask anything related to Hindu Dharma, and I'll do my best to provide helpful guidance! 🕉️`;
+
+        const assistantMessage: Message = {
+          id: (Date.now() + 1).toString(),
+          content: offTopicResponse,
+          role: 'assistant',
+          timestamp: new Date(),
+        };
+
+        setMessages(prev => [...prev, assistantMessage]);
+        setIsLoading(false);
+        return;
+      }
+
       let assistantContent: string;
 
       if (engine === 'indic') {
