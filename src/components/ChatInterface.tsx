@@ -159,6 +159,8 @@ export const ChatInterface = ({
       'krishna', 'rama', 'shiva', 'vishnu', 'brahma', 'devi', 'ganesha',
       'hanuman', 'lakshmi', 'saraswati', 'durga', 'kali', 'parvati',
       'indra', 'surya', 'bhagavan', 'bhagwan', 'ishwar', 'paramatma',
+      'kesava', 'keshava', 'govinda', 'madhava', 'narayana', 'vasudeva',
+      'nama', 'nam', 'namam', 'japa', 'kirtan', 'bhajan', 'chanting',
       
       // Festivals and observances
       'diwali', 'holi', 'navratri', 'dussehra', 'janmashtami', 'shivaratri',
