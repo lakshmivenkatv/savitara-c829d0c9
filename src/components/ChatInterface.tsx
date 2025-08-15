@@ -127,6 +127,7 @@ export const ChatInterface = ({
       'karva', 'chauth', 'ekadashi', 'amavasya', 'purnima', 'vrat', 'vratam',
       'chaturmasya', 'caturmasya', 'sankranti', 'makar', 'sankrant', 'uttarayan',
       'pongal', 'bihu', 'baisakhi', 'onam', 'gudi', 'padwa', 'ugadi',
+      'mukkoti', 'vaikunta', 'mokshada', 'nirjala', 'devshayani', 'prabodhini',
       
       // Philosophical concepts
       'karma', 'moksha', 'samsara', 'atman', 'brahman', 'ahimsa',
