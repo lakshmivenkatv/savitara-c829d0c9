@@ -305,6 +305,10 @@ export type Database = {
         Args: { _profile_user_id: string; _viewer_id: string }
         Returns: boolean
       }
+      get_current_user_type: {
+        Args: Record<PropertyKey, never>
+        Returns: Database["public"]["Enums"]["user_type"]
+      }
       has_active_connection: {
         Args: { _profile_user_id: string; _viewer_id: string }
         Returns: boolean
