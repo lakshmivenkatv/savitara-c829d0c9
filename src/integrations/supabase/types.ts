@@ -312,7 +312,7 @@ export type Database = {
     }
     Enums: {
       sampradaya: "madhva" | "vaishnava" | "smarta"
-      user_type: "acharya" | "grihasta"
+      user_type: "acharya" | "grihasta" | "admin"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -441,7 +441,7 @@ export const Constants = {
   public: {
     Enums: {
       sampradaya: ["madhva", "vaishnava", "smarta"],
-      user_type: ["acharya", "grihasta"],
+      user_type: ["acharya", "grihasta", "admin"],
     },
   },
 } as const

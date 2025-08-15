@@ -205,6 +205,7 @@ export const SignupForm = ({ onSwitchToLogin }: SignupFormProps) => {
           <SelectContent>
             <SelectItem value="grihasta">Grihasta (Seeker)</SelectItem>
             <SelectItem value="acharya">Acharya (Teacher)</SelectItem>
+            <SelectItem value="admin">Admin</SelectItem>
           </SelectContent>
         </Select>
       </div>

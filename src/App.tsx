@@ -14,6 +14,7 @@ import Chat from "./pages/Chat";
 import { AuthPage } from "./components/auth/AuthPage";
 import { ResetPassword } from "./components/auth/ResetPassword";
 import AcharyaSearch from "./pages/AcharyaSearch";
+import AdminDashboard from "./pages/AdminDashboard";
 import { Navigation } from "./components/layout/Navigation";
 
 const queryClient = new QueryClient();
@@ -73,6 +74,7 @@ const App = () => {
               <Route path="/connection-requests" element={<ConnectionRequests />} />
               <Route path="/conversations" element={<Conversations />} />
               <Route path="/chat/:conversationId" element={<Chat />} />
+              <Route path="/admin" element={<AdminDashboard />} />
               <Route path="/reset-password" element={<ResetPassword />} />
               {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
               <Route path="*" element={<NotFound />} />

@@ -1,10 +1,11 @@
 import { Button } from '@/components/ui/button';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
-import { LogOut, MessageCircle, Search, Home, Users, Menu } from 'lucide-react';
+import { LogOut, MessageCircle, Search, Home, Users, Menu, Settings } from 'lucide-react';
 import { Link, useLocation } from 'react-router-dom';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { useState } from 'react';
+import { useUserProfile } from '@/hooks/useUserProfile';
 
 interface NavigationProps {
   user: any;
@@ -15,6 +16,7 @@ export const Navigation = ({ user }: NavigationProps) => {
   const location = useLocation();
   const isMobile = useIsMobile();
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const { isAdmin } = useUserProfile();
 
   const handleLogout = async () => {
     try {
@@ -39,6 +41,7 @@ export const Navigation = ({ user }: NavigationProps) => {
     { to: '/acharyas', icon: Search, label: 'Find Acharyas' },
     { to: '/connection-requests', icon: Users, label: 'Connections' },
     { to: '/conversations', icon: MessageCircle, label: 'Conversations' },
+    ...(isAdmin ? [{ to: '/admin', icon: Settings, label: 'Admin' }] : []),
   ];
 
   return (
