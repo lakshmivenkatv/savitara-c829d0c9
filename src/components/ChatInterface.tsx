@@ -138,6 +138,21 @@ export const ChatInterface = ({
       'solah', 'somvar', 'mangala', 'gauri', 'santoshi', 'mata', 'jagran',
       'jagrata', 'aarti', 'puja', 'archana', 'abhishek', 'rudrabhishek',
       
+      // Vedic Astrology and Jyotish
+      'jyotish', 'astrology', 'horoscope', 'kundli', 'kundali', 'birth', 'chart',
+      'panchang', 'tithi', 'vara', 'nakshatra', 'yoga', 'karana', 'muhurat',
+      'planets', 'graha', 'sun', 'surya', 'moon', 'chandra', 'mars', 'mangal',
+      'mercury', 'budh', 'jupiter', 'guru', 'brihaspati', 'venus', 'shukra',
+      'saturn', 'shani', 'rahu', 'ketu', 'zodiac', 'rashi', 'sign',
+      'aries', 'mesha', 'taurus', 'vrishabha', 'gemini', 'mithuna',
+      'cancer', 'karka', 'leo', 'simha', 'virgo', 'kanya', 'libra', 'tula',
+      'scorpio', 'vrishchika', 'sagittarius', 'dhanu', 'capricorn', 'makara',
+      'aquarius', 'kumbha', 'pisces', 'meena', 'lagna', 'ascendant', 'house',
+      'bhava', 'dasha', 'antardasha', 'mahadasha', 'transit', 'gochar',
+      'manglik', 'kuja', 'dosha', 'yoga', 'raj', 'gaja', 'kesari', 'neecha',
+      'uchcha', 'exalted', 'debilitated', 'combust', 'retrograde', 'vakri',
+      'gemstone', 'ratna', 'rudraksha', 'yantra', 'remedy', 'upay', 'donation',
+      
       // Philosophical concepts
       'karma', 'moksha', 'samsara', 'atman', 'brahman', 'ahimsa',
       'dharana', 'samadhi', 'pranayama', 'asana', 'chakra',
