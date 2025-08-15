@@ -73,7 +73,7 @@ serve(async (req) => {
             }
           ],
           temperature: 0.2,
-          max_tokens: 500
+          max_tokens: 2000  // Increased from 500 to allow complete responses
         };
 
         // Add online-specific parameters only for online models
@@ -107,6 +107,10 @@ serve(async (req) => {
           if (!answer) {
             throw new Error('No answer received from Perplexity');
           }
+
+          // Log the complete answer to check if it's being truncated
+          console.log('Complete answer received:', answer.length, 'characters');
+          console.log('Answer preview:', answer.substring(0, 200) + '...');
 
           return new Response(
             JSON.stringify({ answer }),
