@@ -145,6 +145,16 @@ export const ChatInterface = ({
       'namaskara', 'prostration', 'aradhana', 'upasana', 'bhakti', 'devotion',
       'sandhya', 'vandanam', 'nitya', 'karma', 'daily', 'routine', 'worship',
       
+      // Madhva sampradaya scriptures and texts
+      'madhva', 'madhwa', 'dvaita', 'raghavendra', 'stotram', 'rayaru',
+      'anuvyakhyana', 'brahma', 'sutra', 'bhashya', 'gita', 'bhashya',
+      'bhagavata', 'tatparya', 'nirnaya', 'mahabharata', 'tatparya', 'nirnaya',
+      'vishnu', 'tattva', 'vinirnaya', 'karma', 'nirnaya', 'pramana', 'lakshana',
+      'upadhi', 'khandana', 'mayavada', 'khandana', 'tattvodyota', 'nyayavivarana',
+      'anu', 'taratamya', 'stotra', 'dvadasha', 'stotra', 'narasimha', 'nakha',
+      'raghavendra', 'vijaya', 'guru', 'raghavendra', 'charitra', 'mantralaya',
+      'panchamukhi', 'hanuman', 'kavach', 'vayu', 'stuti', 'hari', 'vayu', 'stuti',
+      
       // Deities and divine
       'krishna', 'rama', 'shiva', 'vishnu', 'brahma', 'devi', 'ganesha',
       'hanuman', 'lakshmi', 'saraswati', 'durga', 'kali', 'parvati',
