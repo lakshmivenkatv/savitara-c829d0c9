@@ -158,7 +158,7 @@ export const ChatInterface = ({
       // Deities and divine
       'krishna', 'rama', 'shiva', 'vishnu', 'brahma', 'devi', 'ganesha',
       'hanuman', 'lakshmi', 'saraswati', 'durga', 'kali', 'parvati',
-      'indra', 'surya', 'bhagavan', 'bhagwan', 'ishwar', 'paramatma',
+      'indra', 'surya', 'yama', 'vayu', 'bhagavan', 'bhagwan', 'ishwar', 'paramatma',
       'kesava', 'keshava', 'govinda', 'madhava', 'narayana', 'vasudeva',
       'nama', 'nam', 'namam', 'japa', 'kirtan', 'bhajan', 'chanting',
       
