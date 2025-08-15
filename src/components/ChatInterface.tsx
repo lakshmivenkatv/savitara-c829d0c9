@@ -478,6 +478,11 @@ Please feel free to ask anything related to Hindu Dharma, and I'll do my best to
     }
   };
 
+  const handleFormSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    sendMessage();
+  };
+
   return (
     <Card className={`w-full ${isMobile ? 'h-[calc(100vh-8rem)]' : 'h-[600px]'} flex flex-col`}>
       <CardHeader className={`flex flex-col ${isMobile ? 'space-y-2 pb-2' : 'space-y-4 pb-4'}`}>
@@ -579,7 +584,7 @@ Please feel free to ask anything related to Hindu Dharma, and I'll do my best to
           </div>
         </ScrollArea>
         
-        <div className={`flex ${isMobile ? 'flex-col space-y-2' : 'items-center space-x-2'}`}>
+        <form onSubmit={handleFormSubmit} className={`flex ${isMobile ? 'flex-col space-y-2' : 'items-center space-x-2'}`}>
           <div className={`${isMobile ? 'w-full' : ''}`}>
             <LanguageSelector value={language} onValueChange={setLanguage} />
           </div>
@@ -587,20 +592,24 @@ Please feel free to ask anything related to Hindu Dharma, and I'll do my best to
             <Input
               value={input}
               onChange={(e) => setInput(e.target.value)}
-              onKeyPress={handleKeyPress}
+              onKeyDown={handleKeyPress}
               placeholder={isMobile ? "Ask about Hindu Dharma..." : "Ask about Hindu Dharma, rituals, sampradayas..."}
               disabled={isLoading}
               className="flex-1"
+              autoComplete="off"
+              autoCapitalize="sentences"
+              autoCorrect="on"
             />
             <Button 
-              onClick={sendMessage} 
+              type="submit"
               disabled={isLoading || !input.trim()}
-              className={`${isMobile ? 'h-10 px-3' : ''}`}
+              className={`${isMobile ? 'h-10 px-3 min-w-[44px] touch-manipulation' : ''}`}
+              style={{ WebkitTapHighlightColor: 'transparent' }}
             >
               <Send className="w-4 h-4" />
             </Button>
           </div>
-        </div>
+        </form>
       </CardContent>
     </Card>
   );
