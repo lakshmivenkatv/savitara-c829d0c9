@@ -117,12 +117,33 @@ export const ChatInterface = ({
       'ramayana', 'mahabharata', 'bhagavad', 'gita', 'purana', 'puranas',
       'upanishad', 'upanishads', 'smriti', 'shruti', 'agama', 'tantra',
       
+      // Specific scriptures and texts
+      'vishnu', 'purana', 'shiva', 'purana', 'brahma', 'purana', 'skanda',
+      'garuda', 'varaha', 'kurma', 'matsya', 'vamana', 'narada', 'markandeya',
+      'brahmanda', 'bhavishya', 'linga', 'padma', 'agni', 'vayu', 'bhagavata',
+      'isha', 'kena', 'katha', 'prashna', 'mundaka', 'mandukya', 'taittiriya',
+      'aitareya', 'chandogya', 'brihadaranyaka', 'svetasvatara', 'kaushitaki',
+      
+      // Itihasas and Kavyas
+      'itihasa', 'itihasas', 'epic', 'kavya', 'kavyas', 'raghuvamsha',
+      'kumarasambhava', 'meghaduta', 'ritusamhara', 'kalidasa', 'bhartrhari',
+      'jayadeva', 'gita', 'govinda', 'gitagovinda', 'kadamba', 'kadambas',
+      
+      // Samhitas and Vedic texts
+      'samhita', 'samhitas', 'rig', 'sama', 'yajur', 'atharva', 'brahmana',
+      'aranyaka', 'kalpa', 'sutra', 'grihya', 'dharma', 'shrauta',
+      
       // Vedic hymns and mantras
       'purusha', 'suktam', 'sukta', 'hymn', 'shri', 'rudram', 'chamakam',
       'gayatri', 'mahamrityunjaya', 'vishnu', 'sahasranama', 'lalita',
       'sahasranama', 'hanuman', 'chalisa', 'aditya', 'hridayam', 'durga',
       'kavach', 'stotram', 'stotra', 'ashtak', 'ashtakam', 'aarti', 'bhajan',
       'mantra', 'shloka', 'sloka', 'verse', 'chant', 'recitation', 'parayana',
+      
+      // Prayers and devotional practices
+      'prayer', 'prayers', 'prarthana', 'supplication', 'invocation', 'vandana',
+      'namaskara', 'prostration', 'aradhana', 'upasana', 'bhakti', 'devotion',
+      'sandhya', 'vandanam', 'nitya', 'karma', 'daily', 'routine', 'worship',
       
       // Deities and divine
       'krishna', 'rama', 'shiva', 'vishnu', 'brahma', 'devi', 'ganesha',
