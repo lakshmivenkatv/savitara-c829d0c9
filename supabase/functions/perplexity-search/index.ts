@@ -73,7 +73,7 @@ serve(async (req) => {
             }
           ],
           temperature: 0.2,
-          max_tokens: 2000  // Increased from 500 to allow complete responses
+          max_tokens: 2048  // Increased to 2048 for maximum response length
         };
 
         // Add online-specific parameters only for online models
