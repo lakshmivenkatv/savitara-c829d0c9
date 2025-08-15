@@ -86,7 +86,8 @@ export const Navigation = ({ user }: NavigationProps) => {
                 variant="ghost"
                 size="sm"
                 onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
-                className="p-2"
+                className="p-2 touch-manipulation"
+                style={{ WebkitTapHighlightColor: 'transparent' }}
               >
                 <Menu className="w-5 h-5" />
               </Button>
@@ -115,11 +116,12 @@ export const Navigation = ({ user }: NavigationProps) => {
                   key={item.to}
                   to={item.to}
                   onClick={() => setIsMobileMenuOpen(false)}
-                  className={`flex items-center space-x-3 px-3 py-2 rounded-md text-base font-medium transition-colors ${
+                  className={`flex items-center space-x-3 px-3 py-3 rounded-md text-base font-medium transition-colors touch-manipulation ${
                     isActive
                       ? 'bg-orange-100 text-orange-700'
-                      : 'text-gray-600 hover:text-orange-600 hover:bg-orange-50'
+                      : 'text-gray-600 hover:text-orange-600 hover:bg-orange-50 active:bg-orange-100'
                   }`}
+                  style={{ WebkitTapHighlightColor: 'transparent' }}
                 >
                   <Icon className="w-5 h-5" />
                   <span>{item.label}</span>
