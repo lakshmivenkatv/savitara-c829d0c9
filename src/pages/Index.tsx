@@ -8,7 +8,7 @@ import { Settings, FileText } from "lucide-react";
 
 const Index = () => {
   const isMobile = useIsMobile();
-  const [engine, setEngine] = useState('azure');
+  const [engine, setEngine] = useState('indic');
   const [documentsCount, setDocumentsCount] = useState(0);
 
   const handleDocumentsProcessed = useCallback(() => {
