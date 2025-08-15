@@ -1071,7 +1071,7 @@ Please feel free to ask anything related to Hindu Dharma, and I'll do my best to
             {messages.length === 0 && (
               <div className={`text-center ${isMobile ? 'py-4 px-2' : 'py-8'} text-muted-foreground w-full`}>
                 <Bot className={`${isMobile ? 'w-8 h-8' : 'w-12 h-12'} mx-auto ${isMobile ? 'mb-2' : 'mb-4'} text-orange-500`} />
-                <p className={`${isMobile ? 'text-base' : 'text-lg'} break-words`}>Welcome to the Hindu Dharma AI Assistant</p>
+                <p className={`${isMobile ? 'text-base' : 'text-lg'} break-words`}>Welcome to the Savitara - AI Assistant</p>
                 <p className={`${isMobile ? 'text-sm px-2' : ''} break-words max-w-full`}>Ask questions about Vedic traditions, rituals, sampradayas, and more.</p>
               </div>
             )}
