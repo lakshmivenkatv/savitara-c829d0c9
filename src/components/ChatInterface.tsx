@@ -69,18 +69,23 @@ export const ChatInterface = ({
   useEffect(() => {
     if (engine === 'indic' && !isInitializingIndic) {
       setIsInitializingIndic(true);
+      toast({
+        title: "Loading Advanced AI Engine",
+        description: "Initializing multilingual BERT model for better contextual understanding...",
+      });
+      
       indicNLP.initialize()
         .then(() => {
           toast({
             title: "Advanced Indic NLP Ready",
-            description: "Enhanced contextual AI engine with document learning is active",
+            description: "Enhanced contextual AI engine with document learning is now active",
           });
         })
         .catch((error) => {
           console.error('Failed to initialize Indic NLP:', error);
           toast({
-            title: "Engine Error",
-            description: "Using enhanced template system with document context",
+            title: "Engine Loading Issue",
+            description: "Using enhanced template system with document context as fallback",
             variant: "destructive",
           });
         })
@@ -189,14 +194,17 @@ export const ChatInterface = ({
         )}
         
         {isInitializingIndic && (
-          <div className="text-sm text-muted-foreground flex items-center gap-2">
+          <div className="text-sm text-muted-foreground flex items-center gap-2 p-3 bg-orange-50 rounded-lg border border-orange-200">
             <div className="w-4 h-4 border-2 border-orange-200 border-t-orange-600 rounded-full animate-spin"></div>
-            Initializing advanced contextual NLP engine...
+            <div className="flex flex-col">
+              <span className="font-medium">Initializing Advanced Indic NLP Engine...</span>
+              <span className="text-xs text-orange-600">This may take 20-30 seconds to load the multilingual BERT model</span>
+            </div>
           </div>
         )}
-        {engine === 'indic' && documentsProcessedCount && documentsProcessedCount > 0 && (
-          <div className="text-sm text-green-600 flex items-center gap-2">
-            📚 Knowledge enhanced with documents
+        {engine === 'indic' && !isInitializingIndic && documentsProcessedCount && documentsProcessedCount > 0 && (
+          <div className="text-sm text-green-600 flex items-center gap-2 p-2 bg-green-50 rounded-lg border border-green-200">
+            📚 Knowledge enhanced with uploaded documents
           </div>
         )}
       </CardHeader>

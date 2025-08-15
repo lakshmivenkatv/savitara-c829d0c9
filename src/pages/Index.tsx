@@ -9,10 +9,11 @@ import { Settings, FileText } from "lucide-react";
 const Index = () => {
   const isMobile = useIsMobile();
   const [engine, setEngine] = useState('azure');
-  const [documentsProcessed, setDocumentsProcessed] = useState(0);
+  const [documentsCount, setDocumentsCount] = useState(0);
 
   const handleDocumentsProcessed = useCallback(() => {
-    setDocumentsProcessed(prev => prev + 1);
+    // Increment count when documents are processed
+    setDocumentsCount(prev => prev + 1);
   }, []);
 
   if (isMobile) {
@@ -31,7 +32,7 @@ const Index = () => {
           engine={engine} 
           onEngineChange={setEngine}
           onDocumentsProcessed={handleDocumentsProcessed}
-          documentsProcessedCount={documentsProcessed}
+          documentsProcessedCount={documentsCount}
         />
       </div>
     );
@@ -74,7 +75,7 @@ const Index = () => {
             engine={engine} 
             onEngineChange={setEngine}
             onDocumentsProcessed={handleDocumentsProcessed}
-            documentsProcessedCount={documentsProcessed}
+            documentsProcessedCount={documentsCount}
           />
         </div>
       </div>
