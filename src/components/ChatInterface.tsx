@@ -129,6 +129,15 @@ export const ChatInterface = ({
       'pongal', 'bihu', 'baisakhi', 'onam', 'gudi', 'padwa', 'ugadi',
       'mukkoti', 'vaikunta', 'mokshada', 'nirjala', 'devshayani', 'prabodhini',
       
+      // Vratas and religious observances
+      'teej', 'hartalika', 'navaratri', 'durga', 'kali', 'lakshmi', 'saraswati',
+      'vinayaka', 'chaturthi', 'gokulashtami', 'rama', 'navami', 'vijaya', 'dashami',
+      'pradosh', 'masik', 'shivaratri', 'mahashivaratri', 'sawan', 'shravan',
+      'monday', 'somvar', 'mangalwar', 'tuesday', 'thursday', 'brihaspativar',
+      'friday', 'shukravar', 'saturday', 'shanivar', 'fast', 'fasting', 'upvas',
+      'solah', 'somvar', 'mangala', 'gauri', 'santoshi', 'mata', 'jagran',
+      'jagrata', 'aarti', 'puja', 'archana', 'abhishek', 'rudrabhishek',
+      
       // Philosophical concepts
       'karma', 'moksha', 'samsara', 'atman', 'brahman', 'ahimsa',
       'dharana', 'samadhi', 'pranayama', 'asana', 'chakra',
