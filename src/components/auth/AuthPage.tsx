@@ -64,7 +64,34 @@ export const AuthPage = () => {
             </TabsContent>
             
             <TabsContent value="phone">
-              <PhoneAuth onBack={() => setActiveTab('email')} />
+              <div className="text-center space-y-4 py-8">
+                <div className="flex justify-center">
+                  <div className="rounded-full bg-muted p-3">
+                    <Phone className="w-8 h-8 text-muted-foreground" />
+                  </div>
+                </div>
+                
+                <div className="space-y-2">
+                  <h3 className="text-lg font-semibold text-foreground">
+                    Phone Authentication
+                  </h3>
+                  <p className="text-sm text-muted-foreground">
+                    Coming Soon
+                  </p>
+                  <p className="text-xs text-muted-foreground max-w-sm mx-auto">
+                    We're working on adding phone number authentication. 
+                    For now, please use email registration to create your account.
+                  </p>
+                </div>
+                
+                <Button 
+                  variant="outline" 
+                  onClick={() => setActiveTab('email')}
+                  className="mt-4"
+                >
+                  Use Email Instead
+                </Button>
+              </div>
             </TabsContent>
           </Tabs>
         </CardContent>
