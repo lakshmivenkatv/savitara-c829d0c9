@@ -163,7 +163,7 @@ export const ChatInterface = ({
       'nama', 'nam', 'namam', 'japa', 'kirtan', 'bhajan', 'chanting',
       
       // Festivals and observances
-      'diwali', 'holi', 'navratri', 'dussehra', 'janmashtami', 'shivaratri',
+      'diwali', 'deepavali', 'holi', 'navratri', 'dussehra', 'dasara', 'dussera', 'janmashtami', 'shivaratri',
       'karva', 'chauth', 'ekadashi', 'amavasya', 'purnima', 'vrat', 'vratam',
       'chaturmasya', 'caturmasya', 'sankranti', 'makar', 'sankrant', 'uttarayan',
       'pongal', 'bihu', 'baisakhi', 'onam', 'gudi', 'padwa', 'ugadi',
