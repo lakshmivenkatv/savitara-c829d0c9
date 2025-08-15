@@ -3,7 +3,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { ScrollArea } from '@/components/ui/scroll-area';
-import { Send, Bot, User, Cpu, Cloud } from 'lucide-react';
+import { Send, Bot, User, Cpu, Cloud, Mic, MicOff } from 'lucide-react';
 import { LanguageSelector } from './LanguageSelector';
 import { EngineSelector } from './EngineSelector';
 import { DocumentUpload } from './DocumentUpload';
@@ -40,7 +40,11 @@ export const ChatInterface = ({
   const [engine, setEngine] = useState(externalEngine || 'azure');
   const [isInitializingIndic, setIsInitializingIndic] = useState(false);
   const [uploadedDocuments, setUploadedDocuments] = useState<File[]>([]);
+  const [isListening, setIsListening] = useState(false);
+  const [speechText, setSpeechText] = useState('');
+  const [showSpeechPreview, setShowSpeechPreview] = useState(false);
   const scrollAreaRef = useRef<HTMLDivElement>(null);
+  const recognitionRef = useRef<any>(null);
   const { toast } = useToast();
   const isMobile = useIsMobile();
 
@@ -104,6 +108,108 @@ export const ChatInterface = ({
       onDocumentsProcessed();
     }
   }, [onDocumentsProcessed]);
+
+  // Initialize speech recognition
+  useEffect(() => {
+    if ('webkitSpeechRecognition' in window || 'SpeechRecognition' in window) {
+      const SpeechRecognition = (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;
+      recognitionRef.current = new SpeechRecognition();
+      
+      recognitionRef.current.continuous = false;
+      recognitionRef.current.interimResults = false;
+      recognitionRef.current.lang = getLanguageCode(language);
+
+      recognitionRef.current.onstart = () => {
+        setIsListening(true);
+        toast({
+          title: "🎤 Listening",
+          description: "Speak now...",
+        });
+      };
+
+      recognitionRef.current.onresult = (event: any) => {
+        const transcript = event.results[0][0].transcript;
+        setSpeechText(transcript);
+        setShowSpeechPreview(true);
+        toast({
+          title: "✅ Speech captured",
+          description: "Review and submit your question",
+        });
+      };
+
+      recognitionRef.current.onerror = (event: any) => {
+        console.error('Speech recognition error:', event.error);
+        setIsListening(false);
+        toast({
+          title: "❌ Speech Error",
+          description: "Failed to capture speech. Please try again.",
+          variant: "destructive",
+        });
+      };
+
+      recognitionRef.current.onend = () => {
+        setIsListening(false);
+      };
+    }
+
+    return () => {
+      if (recognitionRef.current) {
+        recognitionRef.current.stop();
+      }
+    };
+  }, [language, toast]);
+
+  // Get language code for speech recognition
+  const getLanguageCode = (lang: string): string => {
+    const langMap: Record<string, string> = {
+      english: 'en-US',
+      hindi: 'hi-IN',
+      tamil: 'ta-IN',
+      telugu: 'te-IN',
+      kannada: 'kn-IN',
+      malayalam: 'ml-IN',
+      bengali: 'bn-IN',
+      gujarati: 'gu-IN',
+      marathi: 'mr-IN',
+      punjabi: 'pa-IN',
+    };
+    return langMap[lang] || 'en-US';
+  };
+
+  // Start speech recognition
+  const startListening = () => {
+    if (!recognitionRef.current) {
+      toast({
+        title: "❌ Not Supported",
+        description: "Speech recognition is not supported in your browser.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    recognitionRef.current.lang = getLanguageCode(language);
+    recognitionRef.current.start();
+  };
+
+  // Stop speech recognition
+  const stopListening = () => {
+    if (recognitionRef.current) {
+      recognitionRef.current.stop();
+    }
+  };
+
+  // Submit speech text
+  const submitSpeechText = () => {
+    setInput(speechText);
+    setShowSpeechPreview(false);
+    setSpeechText('');
+  };
+
+  // Cancel speech input
+  const cancelSpeechInput = () => {
+    setShowSpeechPreview(false);
+    setSpeechText('');
+  };
 
   // Function to normalize text for better matching across Indic scripts
   const normalizeText = (text: string): string => {
@@ -748,25 +854,59 @@ Please feel free to ask anything related to Hindu Dharma, and I'll do my best to
           </div>
         </ScrollArea>
         
+        {/* Speech Preview */}
+        {showSpeechPreview && (
+          <div className="p-4 bg-blue-50 rounded-lg border border-blue-200">
+            <h4 className="text-sm font-medium text-blue-700 mb-2">Speech to Text Result:</h4>
+            <p className="text-gray-700 mb-3 p-2 bg-white rounded border">{speechText}</p>
+            <div className="flex gap-2">
+              <Button 
+                type="button" 
+                onClick={submitSpeechText}
+                className="bg-green-600 hover:bg-green-700 text-white"
+              >
+                ✅ Submit This Question
+              </Button>
+              <Button 
+                type="button" 
+                variant="outline" 
+                onClick={cancelSpeechInput}
+              >
+                ❌ Cancel
+              </Button>
+            </div>
+          </div>
+        )}
+        
         <form onSubmit={handleFormSubmit} className={`flex ${isMobile ? 'flex-col space-y-3' : 'items-center space-x-2'}`}>
           <div className={`${isMobile ? 'w-full' : ''}`}>
             <LanguageSelector value={language} onValueChange={setLanguage} />
           </div>
           {isMobile ? (
             <>
-              <Input
-                value={input}
-                onChange={(e) => setInput(e.target.value)}
-                onKeyDown={handleKeyPress}
-                placeholder="Ask about Hindu Dharma..."
-                disabled={isLoading}
-                className="w-full"
-                autoComplete="off"
-                autoCapitalize="sentences"
-                autoCorrect="on"
-                enterKeyHint="send"
-                inputMode="text"
-              />
+              <div className="flex space-x-2">
+                <Input
+                  value={input}
+                  onChange={(e) => setInput(e.target.value)}
+                  onKeyDown={handleKeyPress}
+                  placeholder="Ask about Hindu Dharma..."
+                  disabled={isLoading}
+                  className="flex-1"
+                  autoComplete="off"
+                  autoCapitalize="sentences"
+                  autoCorrect="on"
+                  enterKeyHint="send"
+                  inputMode="text"
+                />
+                <Button
+                  type="button"
+                  onClick={isListening ? stopListening : startListening}
+                  disabled={isLoading || showSpeechPreview}
+                  className={`h-12 px-3 ${isListening ? 'bg-red-600 hover:bg-red-700' : 'bg-blue-600 hover:bg-blue-700'}`}
+                >
+                  {isListening ? <MicOff className="w-5 h-5" /> : <Mic className="w-5 h-5" />}
+                </Button>
+              </div>
               <Button 
                 type="submit"
                 disabled={isLoading || !input.trim()}
@@ -796,6 +936,14 @@ Please feel free to ask anything related to Hindu Dharma, and I'll do my best to
                 enterKeyHint="send"
                 inputMode="text"
               />
+              <Button
+                type="button"
+                onClick={isListening ? stopListening : startListening}
+                disabled={isLoading || showSpeechPreview}
+                className={`px-3 ${isListening ? 'bg-red-600 hover:bg-red-700' : 'bg-blue-600 hover:bg-blue-700'}`}
+              >
+                {isListening ? <MicOff className="w-4 h-4" /> : <Mic className="w-4 h-4" />}
+              </Button>
               <Button 
                 type="submit"
                 disabled={isLoading || !input.trim()}
