@@ -584,37 +584,67 @@ Please feel free to ask anything related to Hindu Dharma, and I'll do my best to
           </div>
         </ScrollArea>
         
-        <form onSubmit={handleFormSubmit} className={`flex ${isMobile ? 'flex-col space-y-2' : 'items-center space-x-2'}`}>
+        <form onSubmit={handleFormSubmit} className={`flex ${isMobile ? 'flex-col space-y-3' : 'items-center space-x-2'}`}>
           <div className={`${isMobile ? 'w-full' : ''}`}>
             <LanguageSelector value={language} onValueChange={setLanguage} />
           </div>
-          <div className={`flex ${isMobile ? 'space-x-2' : 'flex-1 space-x-2'}`}>
-            <Input
-              value={input}
-              onChange={(e) => setInput(e.target.value)}
-              onKeyDown={handleKeyPress}
-              placeholder={isMobile ? "Ask about Hindu Dharma..." : "Ask about Hindu Dharma, rituals, sampradayas..."}
-              disabled={isLoading}
-              className="flex-1"
-              autoComplete="off"
-              autoCapitalize="sentences"
-              autoCorrect="on"
-              enterKeyHint="send"
-              inputMode="text"
-            />
-            <Button 
-              type="submit"
-              disabled={isLoading || !input.trim()}
-              className={`${isMobile ? 'h-10 px-3 min-w-[44px] touch-manipulation active:scale-95' : ''}`}
-              style={{ 
-                WebkitTapHighlightColor: 'transparent',
-                touchAction: 'manipulation'
-              }}
-              onTouchStart={() => {}} // Ensures touch events are properly handled
-            >
-              <Send className="w-4 h-4" />
-            </Button>
-          </div>
+          {isMobile ? (
+            <>
+              <Input
+                value={input}
+                onChange={(e) => setInput(e.target.value)}
+                onKeyDown={handleKeyPress}
+                placeholder="Ask about Hindu Dharma..."
+                disabled={isLoading}
+                className="w-full"
+                autoComplete="off"
+                autoCapitalize="sentences"
+                autoCorrect="on"
+                enterKeyHint="send"
+                inputMode="text"
+              />
+              <Button 
+                type="submit"
+                disabled={isLoading || !input.trim()}
+                className="w-full h-12 touch-manipulation active:scale-95"
+                style={{ 
+                  WebkitTapHighlightColor: 'transparent',
+                  touchAction: 'manipulation'
+                }}
+                onTouchStart={() => {}}
+              >
+                <Send className="w-5 h-5 mr-2" />
+                Send Message
+              </Button>
+            </>
+          ) : (
+            <div className="flex flex-1 space-x-2">
+              <Input
+                value={input}
+                onChange={(e) => setInput(e.target.value)}
+                onKeyDown={handleKeyPress}
+                placeholder="Ask about Hindu Dharma, rituals, sampradayas..."
+                disabled={isLoading}
+                className="flex-1"
+                autoComplete="off"
+                autoCapitalize="sentences"
+                autoCorrect="on"
+                enterKeyHint="send"
+                inputMode="text"
+              />
+              <Button 
+                type="submit"
+                disabled={isLoading || !input.trim()}
+                style={{ 
+                  WebkitTapHighlightColor: 'transparent',
+                  touchAction: 'manipulation'
+                }}
+                onTouchStart={() => {}}
+              >
+                <Send className="w-4 h-4" />
+              </Button>
+            </div>
+          )}
         </form>
       </CardContent>
     </Card>
