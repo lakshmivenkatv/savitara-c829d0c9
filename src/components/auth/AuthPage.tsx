@@ -27,7 +27,7 @@ export const AuthPage = () => {
         <CardHeader className="text-center">
           <div className="flex justify-center mb-4">
             <img 
-              src="/lovable-uploads/bb01a657-aa74-49e8-9fcd-657457a9c5ee.png" 
+              src="/lovable-uploads/bb01a657-aa74-49e8-9fcd-657457a9c5ee.png?v=2" 
               alt="Savitara Logo" 
               className="w-20 h-20 object-contain"
             />
