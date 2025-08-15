@@ -25,6 +25,13 @@ export const AuthPage = () => {
     <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-orange-50 to-orange-100 p-4">
       <Card className="w-full max-w-md">
         <CardHeader className="text-center">
+          <div className="flex justify-center mb-4">
+            <img 
+              src="/lovable-uploads/3bb19521-3c50-41cf-b574-d98f5598202b.png" 
+              alt="Savitara Logo" 
+              className="w-20 h-20 object-contain"
+            />
+          </div>
           <CardTitle className="text-2xl font-bold bg-gradient-to-r from-orange-600 to-orange-800 bg-clip-text text-transparent">
             Savitara
           </CardTitle>

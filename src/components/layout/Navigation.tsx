@@ -46,8 +46,15 @@ export const Navigation = ({ user }: NavigationProps) => {
       <div className={`${isMobile ? 'px-4' : 'max-w-7xl mx-auto px-4 sm:px-6 lg:px-8'}`}>
         <div className={`flex justify-between items-center ${isMobile ? 'h-14' : 'h-16'}`}>
           <div className="flex items-center space-x-8">
-            <Link to="/" className={`${isMobile ? 'text-xl' : 'text-2xl'} font-bold bg-gradient-to-r from-orange-600 to-orange-800 bg-clip-text text-transparent`}>
-              Savitara
+            <Link to="/" className="flex items-center space-x-3">
+              <img 
+                src="/lovable-uploads/3bb19521-3c50-41cf-b574-d98f5598202b.png" 
+                alt="Savitara Logo" 
+                className={`object-contain ${isMobile ? 'w-8 h-8' : 'w-10 h-10'}`}
+              />
+              <span className={`${isMobile ? 'text-xl' : 'text-2xl'} font-bold bg-gradient-to-r from-orange-600 to-orange-800 bg-clip-text text-transparent`}>
+                Savitara
+              </span>
             </Link>
             
             {!isMobile && (
