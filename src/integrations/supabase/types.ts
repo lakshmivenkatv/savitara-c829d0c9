@@ -293,6 +293,10 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      can_view_acharya_profile: {
+        Args: { _acharya_id: string; _viewer_id: string }
+        Returns: boolean
+      }
       can_view_pending_profile: {
         Args: { _profile_user_id: string; _viewer_id: string }
         Returns: boolean
