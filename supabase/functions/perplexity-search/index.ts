@@ -73,12 +73,14 @@ serve(async (req) => {
               content: systemPrompt
             },
             {
-              role: 'user',
-              content: message
+              role: 'user', 
+              content: `${message}
+
+CRITICAL INSTRUCTION: You must respond in ${language} language only, regardless of what language this question was asked in. Even if the question is in English, your entire response must be in ${language}. Do not mix languages.`
             }
           ],
-          temperature: 0.2,
-          max_tokens: 2048  // Increased to 2048 for maximum response length
+          temperature: 0.1,  // Lower temperature for more consistent behavior
+          max_tokens: 2048
         };
 
         // Add online-specific parameters only for online models
