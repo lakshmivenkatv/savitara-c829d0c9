@@ -168,6 +168,7 @@ export const ChatInterface = ({
       'chaturmasya', 'caturmasya', 'sankranti', 'makar', 'sankrant', 'uttarayan',
       'pongal', 'bihu', 'baisakhi', 'onam', 'gudi', 'padwa', 'ugadi',
       'mukkoti', 'vaikunta', 'mokshada', 'nirjala', 'devshayani', 'prabodhini',
+      'vijaya', 'dasami', 'dashami', 'ashatami', 'ashtami', 'maha', 'navami',
       
       // Vratas and religious observances
       'teej', 'hartalika', 'navaratri', 'durga', 'kali', 'lakshmi', 'saraswati',
