@@ -108,14 +108,134 @@ export const ChatInterface = ({
   // Function to validate if question is related to Hindu Dharma
   const isHinduDharmaRelated = (question: string): boolean => {
     const hinduDharmaKeywords = [
-      // Core concepts
+      // Core concepts - English
       'dharma', 'vedic', 'veda', 'vedas', 'hindu', 'hinduism', 'sanatan', 'sanatana',
       'sampradaya', 'tradition', 'ritual', 'ceremony', 'puja', 'yajna', 'yagna',
       'mantra', 'shloka', 'sanskrit', 'yoga', 'meditation', 'dhyana',
       
-      // Scriptures and texts
+      // Core concepts - Hindi (Devanagari)
+      'धर्म', 'धर्मा', 'वेद', 'वेदा', 'हिंदू', 'सनातन', 'संप्रदाय', 'परंपरा', 'रीति',
+      'पूजा', 'यज्ञ', 'यजन', 'मंत्र', 'श्लोक', 'संस्कृत', 'योग', 'ध्यान', 'साधना',
+      
+      // Core concepts - Tamil
+      'தர்மம்', 'வேதம்', 'இந்து', 'சனாதன', 'சம்பிரதாயம்', 'பரம்பரை', 'பூஜை',
+      'யாகம்', 'மந்திரம்', 'ஸ்லோகம்', 'சமஸ்கிருதம்', 'யோகம்', 'தியானம்',
+      
+      // Core concepts - Telugu  
+      'ధర్మం', 'వేదం', 'హిందూ', 'సనాతన', 'సంప్రదాయం', 'పరంపర', 'పూజ',
+      'యజ్ఞం', 'మంత్రం', 'శ్లోకం', 'సంస్కృతం', 'యోగం', 'ధ్యానం',
+      
+      // Core concepts - Kannada
+      'ಧರ್ಮ', 'ವೇದ', 'ಹಿಂದೂ', 'ಸನಾತನ', 'ಸಂಪ್ರದಾಯ', 'ಪರಂಪರೆ', 'ಪೂಜೆ',
+      'ಯಜ್ಞ', 'ಮಂತ್ರ', 'ಶ್ಲೋಕ', 'ಸಂಸ್ಕೃತ', 'ಯೋಗ', 'ಧ್ಯಾನ',
+      
+      // Core concepts - Malayalam
+      'ധർമ്മം', 'വേദം', 'ഹിന്ദു', 'സനാതന', 'സമ്പ്രദായം', 'പാരമ്പര്യം', 'പൂജ',
+      'യജ്ഞം', 'മന്ത്രം', 'ശ്ലോകം', 'സംസ്കൃതം', 'യോഗം', 'ധ്യാനം',
+      
+      // Core concepts - Bengali
+      'ধর্ম', 'বেদ', 'হিন্দু', 'সনাতন', 'সম্প্রদায়', 'পরম্পরা', 'পূজা',
+      'যজ্ঞ', 'মন্ত্র', 'শ্লোক', 'সংস্কৃত', 'যোগ', 'ধ্যান',
+      
+      // Core concepts - Gujarati
+      'ધર્મ', 'વેદ', 'હિંદુ', 'સનાતન', 'સંપ્રદાય', 'પરંપરા', 'પૂજા',
+      'યજ્ઞ', 'મંત્ર', 'શ્લોક', 'સંસ્કૃત', 'યોગ', 'ધ્યાન',
+      
+      // Scriptures and texts - English
       'ramayana', 'mahabharata', 'bhagavad', 'gita', 'purana', 'puranas',
       'upanishad', 'upanishads', 'smriti', 'shruti', 'agama', 'tantra',
+      
+      // Scriptures - Hindi
+      'रामायण', 'महाभारत', 'भगवद्गीता', 'गीता', 'पुराण', 'उपनिषद्',
+      'स्मृति', 'श्रुति', 'आगम', 'तंत्र',
+      
+      // Scriptures - Tamil
+      'ராமாயணம்', 'மகாபாரதம்', 'பகவத்கீதை', 'கீதை', 'புராணம்', 'உபநிஷத்',
+      'ஸ்மிருதி', 'ஶ்ருதி', 'ஆகமம்', 'தந்திரம்',
+      
+      // Scriptures - Telugu
+      'రామాయణం', 'మహాభారతం', 'భగవద్గీత', 'గీత', 'పురాణం', 'ఉపనిషత్తు',
+      'స్మృతి', 'శ్రుతి', 'ఆగమం', 'తంత్రం',
+      
+      // Scriptures - Kannada
+      'ರಾಮಾಯಣ', 'ಮಹಾಭಾರತ', 'ಭಗವದ್ಗೀತೆ', 'ಗೀತೆ', 'ಪುರಾಣ', 'ಉಪನಿಷತ್ತು',
+      'ಸ್ಮೃತಿ', 'ಶ್ರುತಿ', 'ಆಗಮ', 'ತಂತ್ರ',
+      
+      // Deities - English
+      'krishna', 'rama', 'shiva', 'vishnu', 'brahma', 'devi', 'ganesha',
+      'hanuman', 'lakshmi', 'saraswati', 'durga', 'kali', 'parvati',
+      'indra', 'surya', 'yama', 'vayu', 'bhagavan', 'bhagwan', 'ishwar', 'paramatma',
+      'kesava', 'keshava', 'govinda', 'madhava', 'narayana', 'vasudeva',
+      
+      // Deities - Hindi
+      'कृष्ण', 'राम', 'शिव', 'विष्णु', 'ब्रह्मा', 'देवी', 'गणेश', 'गणपति',
+      'हनुमान', 'लक्ष्मी', 'सरस्वती', 'दुर्गा', 'काली', 'पार्वती', 'इंद्र',
+      'सूर्य', 'यम', 'वायु', 'भगवान्', 'ईश्वर', 'परमात्मा', 'केशव', 'गोविंद',
+      'माधव', 'नारायण', 'वासुदेव',
+      
+      // Deities - Tamil
+      'கிருஷ்ணன்', 'ராமன்', 'சிவன்', 'விஷ்ணு', 'பிரம்மா', 'தேவி', 'கணேசன்',
+      'அனுமான்', 'லக்ஷ்மி', 'சரஸ்வதி', 'துர்கை', 'காளி', 'பார்வதி',
+      'இந்திரன்', 'சூரியன்', 'யமன்', 'வாயு', 'பகவான்', 'ஈஸ்வரன்',
+      
+      // Deities - Telugu
+      'కృష్ణుడు', 'రాముడు', 'శివుడు', 'విష్ణువు', 'బ్రహ్మ', 'దేవి', 'గణేశుడు',
+      'హనుమంతుడు', 'లక్ష్మి', 'సరస్వతి', 'దుర్గ', 'కాళి', 'పార్వతి',
+      'ఇంద్రుడు', 'సూర్యుడు', 'యముడు', 'వాయువు', 'భగవాన్', 'ఈశ్వరుడు',
+      
+      // Deities - Kannada
+      'ಕೃಷ್ಣ', 'ರಾಮ', 'ಶಿವ', 'ವಿಷ್ಣು', 'ಬ್ರಹ್ಮ', 'ದೇವಿ', 'ಗಣೇಶ',
+      'ಹನುಮಾನ್', 'ಲಕ್ಷ್ಮೀ', 'ಸರಸ್ವತಿ', 'ದುರ್ಗಾ', 'ಕಾಳಿ', 'ಪಾರ್ವತಿ',
+      'ಇಂದ್ರ', 'ಸೂರ್ಯ', 'ಯಮ', 'ವಾಯು', 'ಭಗವಾನ್', 'ಈಶ್ವರ',
+      
+      // Festivals - English
+      'diwali', 'deepavali', 'holi', 'navratri', 'dussehra', 'dasara', 'dussera', 'janmashtami', 'shivaratri',
+      'karva', 'chauth', 'ekadashi', 'amavasya', 'purnima', 'vrat', 'vratam',
+      'vijaya', 'dasami', 'dashami', 'ashatami', 'ashtami', 'maha', 'navami',
+      
+      // Festivals - Hindi
+      'दीवाली', 'दीपावली', 'होली', 'नवरात्रि', 'दशहरा', 'जन्माष्टमी', 'शिवरात्रि',
+      'करवा चौथ', 'एकादशी', 'अमावस्या', 'पूर्णिमा', 'व्रत', 'विजया दशमी',
+      'अष्टमी', 'महा नवमी',
+      
+      // Festivals - Tamil
+      'தீபாவளி', 'ஹோலி', 'நவராத்திரி', 'விஜயதசமி', 'ஜன்மாஷ்டமி', 'சிவராத்திரி',
+      'ஏகாதசி', 'அமாவாசை', 'பௌர்ணமி', 'விரதம்', 'அஷ்டமி', 'மகா நவமி',
+      
+      // Festivals - Telugu
+      'దీపావళి', 'హోళి', 'నవరాత్రులు', 'విజయదశమి', 'జన్మాష్టమి', 'శివరాత్రి',
+      'ఏకాదశి', 'అమావాస్య', 'పౌర్ణమి', 'వ్రతం', 'అష్టమి', 'మహా నవమి',
+      
+      // Festivals - Kannada
+      'ದೀಪಾವಳಿ', 'ಹೋಳಿ', 'ನವರಾತ್ರಿ', 'ವಿಜಯದಶಮಿ', 'ಜನ್ಮಾಷ್ಟಮಿ', 'ಶಿವರಾತ್ರಿ',
+      'ಏಕಾದಶಿ', 'ಅಮಾವಾಸ್ಯೆ', 'ಪೌರ್ಣಮಿ', 'ವ್ರತ', 'ಅಷ್ಟಮಿ', 'ಮಹಾ ನವಮಿ',
+      
+      // Practices - English
+      'nama', 'nam', 'namam', 'japa', 'kirtan', 'bhajan', 'chanting',
+      'prayer', 'prayers', 'prarthana', 'supplication', 'invocation', 'vandana',
+      'namaskara', 'prostration', 'aradhana', 'upasana', 'bhakti', 'devotion',
+      'sandhya', 'vandanam', 'nitya', 'karma', 'daily', 'routine', 'worship',
+      'aarti', 'archana', 'abhishek', 'rudrabhishek',
+      
+      // Practices - Hindi  
+      'नाम', 'जप', 'कीर्तन', 'भजन', 'प्रार्थना', 'वंदना', 'नमस्कार',
+      'आराधना', 'उपासना', 'भक्ति', 'संध्या', 'नित्य कर्म', 'पूजा',
+      'आरती', 'अर्चना', 'अभिषेक', 'रुद्राभिषेक',
+      
+      // Practices - Tamil
+      'நாமம்', 'ஜபம்', 'கீர்த்தனை', 'பஜனை', 'பிரார்த்தனை', 'வந்தனம்', 'நமஸ்காரம்',
+      'ஆராதனை', 'உபாசனை', 'பக்தி', 'சந்த்யா', 'நித்ய கர்மம்', 'ஆரத்தி',
+      'அர்ச்சனை', 'அபிஷேகம்',
+      
+      // Practices - Telugu
+      'నామం', 'జపం', 'కీర్తన', 'భజన', 'ప్రార్థన', 'వందనం', 'నమస్కారం',
+      'ఆరాధన', 'ఉపాసన', 'భక్తి', 'సంధ్య', 'నిత్య కర్మ', 'ఆరతి',
+      'అర్చన', 'అభిషేకం',
+      
+      // Practices - Kannada
+      'ನಾಮ', 'ಜಪ', 'ಕೀರ್ತನೆ', 'ಭಜನೆ', 'ಪ್ರಾರ್ಥನೆ', 'ವಂದನೆ', 'ನಮಸ್ಕಾರ',
+      'ಆರಾಧನೆ', 'ಉಪಾಸನೆ', 'ಭಕ್ತಿ', 'ಸಂಧ್ಯೆ', 'ನಿತ್ಯ ಕರ್ಮ', 'ಆರತಿ',
+      'ಅರ್ಚನೆ', 'ಅಭಿಷೇಕ',
       
       // Specific scriptures and texts
       'vishnu', 'purana', 'shiva', 'purana', 'brahma', 'purana', 'skanda',
@@ -140,11 +260,6 @@ export const ChatInterface = ({
       'kavach', 'stotram', 'stotra', 'ashtak', 'ashtakam', 'aarti', 'bhajan',
       'mantra', 'shloka', 'sloka', 'verse', 'chant', 'recitation', 'parayana',
       
-      // Prayers and devotional practices
-      'prayer', 'prayers', 'prarthana', 'supplication', 'invocation', 'vandana',
-      'namaskara', 'prostration', 'aradhana', 'upasana', 'bhakti', 'devotion',
-      'sandhya', 'vandanam', 'nitya', 'karma', 'daily', 'routine', 'worship',
-      
       // Madhva sampradaya scriptures and texts
       'madhva', 'madhwa', 'dvaita', 'raghavendra', 'stotram', 'rayaru',
       'anuvyakhyana', 'brahma', 'sutra', 'bhashya', 'gita', 'bhashya',
@@ -154,13 +269,6 @@ export const ChatInterface = ({
       'anu', 'taratamya', 'stotra', 'dvadasha', 'stotra', 'narasimha', 'nakha',
       'raghavendra', 'vijaya', 'guru', 'raghavendra', 'charitra', 'mantralaya',
       'panchamukhi', 'hanuman', 'kavach', 'vayu', 'stuti', 'hari', 'vayu', 'stuti',
-      
-      // Deities and divine
-      'krishna', 'rama', 'shiva', 'vishnu', 'brahma', 'devi', 'ganesha',
-      'hanuman', 'lakshmi', 'saraswati', 'durga', 'kali', 'parvati',
-      'indra', 'surya', 'yama', 'vayu', 'bhagavan', 'bhagwan', 'ishwar', 'paramatma',
-      'kesava', 'keshava', 'govinda', 'madhava', 'narayana', 'vasudeva',
-      'nama', 'nam', 'namam', 'japa', 'kirtan', 'bhajan', 'chanting',
       
       // Vishnu avatars and forms
       'narasimha', 'varaha', 'vamana', 'parashurama', 'kalki', 'buddha', 'matsya', 'kurma',
@@ -197,14 +305,6 @@ export const ChatInterface = ({
       // Other important deities
       'brahmaputra', 'kamadeva', 'rati', 'vasant', 'kubera', 'yaksha',
       'gandharva', 'apsara', 'kinnar', 'garuda', 'nandi', 'vahana',
-      
-      // Festivals and observances
-      'diwali', 'deepavali', 'holi', 'navratri', 'dussehra', 'dasara', 'dussera', 'janmashtami', 'shivaratri',
-      'karva', 'chauth', 'ekadashi', 'amavasya', 'purnima', 'vrat', 'vratam',
-      'chaturmasya', 'caturmasya', 'sankranti', 'makar', 'sankrant', 'uttarayan',
-      'pongal', 'bihu', 'baisakhi', 'onam', 'gudi', 'padwa', 'ugadi',
-      'mukkoti', 'vaikunta', 'mokshada', 'nirjala', 'devshayani', 'prabodhini',
-      'vijaya', 'dasami', 'dashami', 'ashatami', 'ashtami', 'maha', 'navami',
       
       // Vratas and religious observances
       'teej', 'hartalika', 'navaratri', 'durga', 'kali', 'lakshmi', 'saraswati',
@@ -249,7 +349,15 @@ export const ChatInterface = ({
       
       // Languages and cultural
       'tamil', 'telugu', 'kannada', 'malayalam', 'bengali', 'gujarati',
-      'marathi', 'punjabi', 'oriya', 'assamese', 'hindi'
+      'marathi', 'punjabi', 'oriya', 'assamese', 'hindi',
+      
+      // Common terms that appear in Indic languages
+      'भगवान', 'देव', 'माता', 'पिता', 'गुरु', 'शिष्य', 'आचार्य', 'स्वामी',
+      'महाराज', 'संत', 'साधु', 'ऋषि', 'मुनि', 'तपस्वी', 'योगी',
+      
+      // Sacred places and temples
+      'तीर्थ', 'मंदिर', 'काशी', 'वृंदावन', 'मथुरा', 'हरिद्वार', 'ऋषिकेश',
+      'तिरुपति', 'रामेश्वरम्', 'द्वारका', 'पुरी', 'बद्रीनाथ', 'केदारनाथ'
     ];
 
     const questionLower = question.toLowerCase();
