@@ -164,22 +164,35 @@ class IndicNLPEngine {
     if (this.isInitialized) return;
 
     try {
-      console.log("Initializing advanced Indic NLP with multilingual BERT...");
+      console.log("Initializing advanced Indic NLP...");
       
-      // Try to load multilingual BERT model for better understanding
-      this.bertModel = await pipeline(
-        'feature-extraction',
-        'Xenova/multilingual-e5-small',
-        { device: 'webgpu' }
-      );
+      // Check if we're on mobile to avoid heavy ML models that cause crashes
+      const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent) || 
+                      window.innerWidth < 768;
       
-      console.log("Multilingual BERT model loaded successfully");
+      if (!isMobile) {
+        try {
+          console.log("Loading multilingual BERT model for desktop...");
+          // Try to load multilingual BERT model for better understanding (desktop only)
+          this.bertModel = await pipeline(
+            'feature-extraction',
+            'Xenova/multilingual-e5-small',
+            { device: 'webgpu' }
+          );
+          console.log("Multilingual BERT model loaded successfully");
+        } catch (error) {
+          console.warn("Failed to load BERT model, using enhanced template system:", error);
+        }
+      } else {
+        console.log("Mobile device detected - using lightweight template system to prevent crashes");
+      }
     } catch (error) {
-      console.warn("Failed to load BERT model, using enhanced template system:", error);
+      console.warn("Failed to initialize ML components, using enhanced template system:", error);
     }
 
-    // Simulate initialization time for UX
-    await new Promise(resolve => setTimeout(resolve, 1000));
+    // Simulate initialization time for UX (shorter on mobile)
+    const initTime = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent) ? 500 : 1000;
+    await new Promise(resolve => setTimeout(resolve, initTime));
     
     this.isInitialized = true;
     console.log("Advanced Indic NLP engine initialized with contextual understanding");
