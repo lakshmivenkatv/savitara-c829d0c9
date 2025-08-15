@@ -1,4 +1,4 @@
-import { useState, useRef, useEffect, useCallback } from 'react';
+import React, { useState, useRef, useEffect, useCallback } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -20,17 +20,44 @@ interface Message {
   timestamp: Date;
 }
 
-export const ChatInterface = () => {
+interface ChatInterfaceProps {
+  engine?: string;
+  onEngineChange?: (engine: string) => void;
+  onDocumentsProcessed?: () => void;
+  documentsProcessedCount?: number;
+}
+
+export const ChatInterface = ({ 
+  engine: externalEngine, 
+  onEngineChange, 
+  onDocumentsProcessed,
+  documentsProcessedCount 
+}: ChatInterfaceProps = {}) => {
   const [messages, setMessages] = useState<Message[]>([]);
   const [input, setInput] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [language, setLanguage] = useState('english');
-  const [engine, setEngine] = useState('azure');
+  const [engine, setEngine] = useState(externalEngine || 'azure');
   const [isInitializingIndic, setIsInitializingIndic] = useState(false);
   const [uploadedDocuments, setUploadedDocuments] = useState<File[]>([]);
   const scrollAreaRef = useRef<HTMLDivElement>(null);
   const { toast } = useToast();
   const isMobile = useIsMobile();
+
+  // Sync external engine state
+  React.useEffect(() => {
+    if (externalEngine && externalEngine !== engine) {
+      setEngine(externalEngine);
+    }
+  }, [externalEngine, engine]);
+
+  // Handle engine changes
+  const handleEngineChange = (newEngine: string) => {
+    setEngine(newEngine);
+    if (onEngineChange) {
+      onEngineChange(newEngine);
+    }
+  };
 
   useEffect(() => {
     if (scrollAreaRef.current) {
@@ -68,7 +95,10 @@ export const ChatInterface = () => {
     // The document processor will automatically reload from database when needed
     console.log('Documents updated, clearing local cache');
     documentProcessor.clearDocuments();
-  }, []);
+    if (onDocumentsProcessed) {
+      onDocumentsProcessed();
+    }
+  }, [onDocumentsProcessed]);
 
   const sendMessage = async () => {
     if (!input.trim() || isLoading) return;
@@ -135,7 +165,7 @@ export const ChatInterface = () => {
   };
 
   return (
-    <Card className={`w-full ${isMobile ? 'h-[calc(100vh-8rem)]' : 'max-w-4xl mx-auto h-[600px]'} flex flex-col`}>
+    <Card className={`w-full ${isMobile ? 'h-[calc(100vh-8rem)]' : 'h-[600px]'} flex flex-col`}>
       <CardHeader className={`flex flex-col ${isMobile ? 'space-y-2 pb-2' : 'space-y-4 pb-4'}`}>
         <div className={`flex ${isMobile ? 'flex-col space-y-2' : 'flex-row'} items-center ${isMobile ? '' : 'justify-between'}`}>
           <CardTitle className={`${isMobile ? 'text-lg text-center' : 'text-2xl'} font-bold bg-gradient-to-r from-orange-600 to-orange-800 bg-clip-text text-transparent`}>
@@ -148,26 +178,29 @@ export const ChatInterface = () => {
             </span>
           </div>
         </div>
-        <div className="flex flex-row items-center justify-center">
-          <EngineSelector value={engine} onValueChange={setEngine} />
-        </div>
+        
+        {isMobile && (
+          <>
+            <div className="flex flex-row items-center justify-center">
+              <EngineSelector value={engine} onValueChange={handleEngineChange} />
+            </div>
+            <DocumentUpload onDocumentsProcessed={handleDocumentsProcessed} />
+          </>
+        )}
+        
         {isInitializingIndic && (
           <div className="text-sm text-muted-foreground flex items-center gap-2">
             <div className="w-4 h-4 border-2 border-orange-200 border-t-orange-600 rounded-full animate-spin"></div>
             Initializing advanced contextual NLP engine...
           </div>
         )}
-        {engine === 'indic' && uploadedDocuments.length > 0 && (
+        {engine === 'indic' && documentsProcessedCount && documentsProcessedCount > 0 && (
           <div className="text-sm text-green-600 flex items-center gap-2">
-            📚 Knowledge enhanced with {uploadedDocuments.length} document(s)
+            📚 Knowledge enhanced with documents
           </div>
         )}
       </CardHeader>
-      
       <CardContent className={`flex-1 flex flex-col ${isMobile ? 'space-y-2' : 'space-y-4'}`}>
-        <DocumentUpload 
-          onDocumentsProcessed={handleDocumentsProcessed}
-        />
         <ScrollArea className={`flex-1 ${isMobile ? 'pr-2' : 'pr-4'} w-full overflow-hidden`} ref={scrollAreaRef}>
           <div className="space-y-4 w-full max-w-full">
             {messages.length === 0 && (
