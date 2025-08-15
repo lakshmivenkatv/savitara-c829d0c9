@@ -6,6 +6,7 @@ import { Upload, FileText, X, FileSpreadsheet, FileJson, Loader2, CheckCircle } 
 import { useToast } from '@/components/ui/use-toast';
 import { supabase } from '@/integrations/supabase/client';
 import { Alert, AlertDescription } from '@/components/ui/alert';
+import { useIsMobile } from '@/hooks/use-mobile';
 import * as XLSX from 'xlsx';
 
 interface DocumentUploadProps {
@@ -25,6 +26,7 @@ export const DocumentUpload: React.FC<DocumentUploadProps> = ({
   onDocumentsProcessed
 }) => {
   const { toast } = useToast();
+  const isMobile = useIsMobile();
   const [isProcessing, setIsProcessing] = useState(false);
   const [uploadedDocuments, setUploadedDocuments] = useState<UploadedDocument[]>([]);
   const [showSuccess, setShowSuccess] = useState(false);
@@ -245,17 +247,17 @@ export const DocumentUpload: React.FC<DocumentUploadProps> = ({
   });
 
   return (
-    <Card className="mb-4">
-      <CardHeader>
-        <CardTitle className="flex items-center gap-2">
-          <FileText className="w-5 h-5" />
+    <Card className={`${isMobile ? 'mb-2' : 'mb-4'} w-full overflow-hidden`}>
+      <CardHeader className={isMobile ? 'pb-3' : ''}>
+        <CardTitle className={`flex items-center gap-2 ${isMobile ? 'text-base' : ''}`}>
+          <FileText className={`${isMobile ? 'w-4 h-4' : 'w-5 h-5'}`} />
           AI Knowledge Base Documents
         </CardTitle>
       </CardHeader>
-      <CardContent className="space-y-4">
+      <CardContent className={`${isMobile ? 'space-y-3 px-3' : 'space-y-4'}`}>
         <div
           {...getRootProps()}
-          className={`border-2 border-dashed rounded-lg p-6 text-center cursor-pointer transition-colors ${
+          className={`border-2 border-dashed rounded-lg ${isMobile ? 'p-4' : 'p-6'} text-center cursor-pointer transition-colors w-full ${
             isDragActive
               ? 'border-primary bg-primary/10'
               : isProcessing 
@@ -266,18 +268,20 @@ export const DocumentUpload: React.FC<DocumentUploadProps> = ({
           <input {...getInputProps()} />
           {isProcessing ? (
             <div className="flex flex-col items-center">
-              <Loader2 className="w-8 h-8 mx-auto mb-2 text-primary animate-spin" />
-              <p>Processing documents...</p>
+              <Loader2 className={`${isMobile ? 'w-6 h-6' : 'w-8 h-8'} mx-auto ${isMobile ? 'mb-1' : 'mb-2'} text-primary animate-spin`} />
+              <p className={`${isMobile ? 'text-sm' : ''}`}>Processing documents...</p>
             </div>
           ) : (
             <>
-              <Upload className="w-8 h-8 mx-auto mb-2 text-muted-foreground" />
+              <Upload className={`${isMobile ? 'w-6 h-6' : 'w-8 h-8'} mx-auto ${isMobile ? 'mb-1' : 'mb-2'} text-muted-foreground`} />
               {isDragActive ? (
-                <p>Drop files here...</p>
+                <p className={`${isMobile ? 'text-sm' : ''}`}>Drop files here...</p>
               ) : (
-                <div>
-                  <p>Drag & drop a PDF, JSON, or Excel file here, or click to select</p>
-                  <p className="text-sm text-muted-foreground mt-1">
+                <div className="w-full">
+                  <p className={`${isMobile ? 'text-sm' : ''} break-words`}>
+                    {isMobile ? 'Tap to select PDF, JSON, or Excel file' : 'Drag & drop a PDF, JSON, or Excel file here, or click to select'}
+                  </p>
+                  <p className={`${isMobile ? 'text-xs' : 'text-sm'} text-muted-foreground mt-1 break-words`}>
                     Upload one document to enhance the AI knowledge base with your data
                   </p>
                 </div>
@@ -287,47 +291,52 @@ export const DocumentUpload: React.FC<DocumentUploadProps> = ({
         </div>
 
         {uploadedDocuments.length > 0 && (
-          <div className="space-y-2">
-            <h4 className="text-sm font-medium">Uploaded Documents:</h4>
-            {uploadedDocuments.map((doc) => (
-              <div
-                key={doc.id}
-                className="flex items-center justify-between p-2 bg-muted rounded-md"
-              >
-                <div className="flex items-center gap-2">
-                  {getFileIcon(doc.fileType)}
-                  <span className="text-sm">{doc.filename}</span>
-                  <span className="text-xs text-muted-foreground">
-                    ({(doc.fileSize / 1024 / 1024).toFixed(2)} MB)
-                  </span>
-                  <span className="text-xs text-primary">
-                    {doc.processedChunks} chunks
-                  </span>
-                </div>
-                <Button
-                  size="sm"
-                  variant="ghost"
-                  onClick={() => removeDocument(doc.id)}
-                  disabled={isProcessing}
+          <div className="space-y-2 w-full">
+            <h4 className={`${isMobile ? 'text-xs' : 'text-sm'} font-medium`}>Uploaded Documents:</h4>
+            <div className="space-y-2 max-h-32 overflow-y-auto">
+              {uploadedDocuments.map((doc) => (
+                <div
+                  key={doc.id}
+                  className={`flex items-center justify-between ${isMobile ? 'p-2' : 'p-2'} bg-muted rounded-md w-full min-w-0`}
                 >
-                  <X className="w-4 h-4" />
-                </Button>
-              </div>
-            ))}
+                  <div className="flex items-center gap-2 min-w-0 flex-1">
+                    {getFileIcon(doc.fileType)}
+                    <span className={`${isMobile ? 'text-xs' : 'text-sm'} truncate flex-1`} title={doc.filename}>
+                      {doc.filename}
+                    </span>
+                    <span className={`${isMobile ? 'text-xs' : 'text-xs'} text-muted-foreground whitespace-nowrap`}>
+                      ({(doc.fileSize / 1024 / 1024).toFixed(1)} MB)
+                    </span>
+                    <span className={`${isMobile ? 'text-xs' : 'text-xs'} text-primary whitespace-nowrap`}>
+                      {doc.processedChunks} chunks
+                    </span>
+                  </div>
+                  <Button
+                    size="sm"
+                    variant="ghost"
+                    onClick={() => removeDocument(doc.id)}
+                    disabled={isProcessing}
+                    className="ml-2 shrink-0"
+                  >
+                    <X className="w-4 h-4" />
+                  </Button>
+                </div>
+              ))}
+            </div>
           </div>
         )}
 
         {showSuccess && (
-          <Alert className="bg-green-50 border-green-200 dark:bg-green-950 dark:border-green-800">
-            <CheckCircle className="h-4 w-4 text-green-600 dark:text-green-400" />
-            <AlertDescription className="flex items-center justify-between">
-              <span className="text-green-800 dark:text-green-200">
+          <Alert className="bg-green-50 border-green-200 dark:bg-green-950 dark:border-green-800 w-full">
+            <CheckCircle className="h-4 w-4 text-green-600 dark:text-green-400 shrink-0" />
+            <AlertDescription className={`flex ${isMobile ? 'flex-col gap-2' : 'items-center justify-between'}`}>
+              <span className={`text-green-800 dark:text-green-200 ${isMobile ? 'text-sm break-words' : ''}`}>
                 File "{processedFileName}" uploaded and processed successfully!
               </span>
               <Button 
                 size="sm" 
                 variant="outline"
-                className="ml-4 border-green-200 text-green-800 hover:bg-green-100 dark:border-green-700 dark:text-green-200 dark:hover:bg-green-900"
+                className={`${isMobile ? 'w-full' : 'ml-4'} border-green-200 text-green-800 hover:bg-green-100 dark:border-green-700 dark:text-green-200 dark:hover:bg-green-900 shrink-0`}
                 onClick={() => setShowSuccess(false)}
               >
                 OK
