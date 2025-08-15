@@ -138,6 +138,10 @@ export const ChatInterface = ({
       'pilgrimage', 'tirtha', 'yatra', 'kumbh', 'ganga', 'ganges',
       'ayurveda', 'jyotish', 'astrology', 'vastu',
       
+      // Religious institutions and monasteries
+      'math', 'matha', 'mutt', 'monastery', 'uttaradi', 'dvaita', 'advaita',
+      'madhva', 'shankara', 'ramanuja', 'chaitanya', 'iskcon', 'arya samaj',
+      
       // Life stages and social
       'grihastha', 'brahmachari', 'vanaprastha', 'sannyasa',
       'varna', 'ashrama', 'samskar', 'sanskar',
