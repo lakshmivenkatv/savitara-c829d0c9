@@ -11,6 +11,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 import { indicNLP } from '@/utils/indicNLP';
 import { documentProcessor } from '@/utils/documentProcessor';
+import { useIsMobile } from '@/hooks/use-mobile';
 
 interface Message {
   id: string;
@@ -29,6 +30,7 @@ export const ChatInterface = () => {
   const [uploadedDocuments, setUploadedDocuments] = useState<File[]>([]);
   const scrollAreaRef = useRef<HTMLDivElement>(null);
   const { toast } = useToast();
+  const isMobile = useIsMobile();
 
   useEffect(() => {
     if (scrollAreaRef.current) {
@@ -133,10 +135,10 @@ export const ChatInterface = () => {
   };
 
   return (
-    <Card className="w-full max-w-4xl mx-auto h-[600px] flex flex-col">
-      <CardHeader className="flex flex-col space-y-4 pb-4">
-        <div className="flex flex-row items-center justify-between">
-          <CardTitle className="text-2xl font-bold bg-gradient-to-r from-orange-600 to-orange-800 bg-clip-text text-transparent">
+    <Card className={`w-full ${isMobile ? 'h-[calc(100vh-8rem)]' : 'max-w-4xl mx-auto h-[600px]'} flex flex-col`}>
+      <CardHeader className={`flex flex-col ${isMobile ? 'space-y-2 pb-2' : 'space-y-4 pb-4'}`}>
+        <div className={`flex ${isMobile ? 'flex-col space-y-2' : 'flex-row'} items-center ${isMobile ? '' : 'justify-between'}`}>
+          <CardTitle className={`${isMobile ? 'text-lg text-center' : 'text-2xl'} font-bold bg-gradient-to-r from-orange-600 to-orange-800 bg-clip-text text-transparent`}>
             Hindu Dharma AI Assistant
           </CardTitle>
           <div className="flex items-center gap-2">
@@ -162,17 +164,17 @@ export const ChatInterface = () => {
         )}
       </CardHeader>
       
-      <CardContent className="flex-1 flex flex-col space-y-4">
+      <CardContent className={`flex-1 flex flex-col ${isMobile ? 'space-y-2' : 'space-y-4'}`}>
         <DocumentUpload 
           onDocumentsProcessed={handleDocumentsProcessed}
         />
-        <ScrollArea className="flex-1 pr-4" ref={scrollAreaRef}>
+        <ScrollArea className={`flex-1 ${isMobile ? 'pr-2' : 'pr-4'}`} ref={scrollAreaRef}>
           <div className="space-y-4">
             {messages.length === 0 && (
-              <div className="text-center py-8 text-muted-foreground">
-                <Bot className="w-12 h-12 mx-auto mb-4 text-orange-500" />
-                <p className="text-lg">Welcome to the Hindu Dharma AI Assistant</p>
-                <p>Ask questions about Vedic traditions, rituals, sampradayas, and more.</p>
+              <div className={`text-center ${isMobile ? 'py-4' : 'py-8'} text-muted-foreground`}>
+                <Bot className={`${isMobile ? 'w-8 h-8' : 'w-12 h-12'} mx-auto ${isMobile ? 'mb-2' : 'mb-4'} text-orange-500`} />
+                <p className={`${isMobile ? 'text-base' : 'text-lg'}`}>Welcome to the Hindu Dharma AI Assistant</p>
+                <p className={`${isMobile ? 'text-sm px-4' : ''}`}>Ask questions about Vedic traditions, rituals, sampradayas, and more.</p>
               </div>
             )}
             
@@ -190,7 +192,7 @@ export const ChatInterface = () => {
                 )}
                 
                 <div
-                  className={`max-w-[70%] rounded-lg px-4 py-2 ${
+                  className={`${isMobile ? 'max-w-[85%]' : 'max-w-[70%]'} rounded-lg ${isMobile ? 'px-3 py-2' : 'px-4 py-2'} ${
                     message.role === 'user'
                       ? 'bg-orange-600 text-white'
                       : 'bg-muted text-foreground'
@@ -227,19 +229,27 @@ export const ChatInterface = () => {
           </div>
         </ScrollArea>
         
-        <div className="flex items-center space-x-2">
-          <LanguageSelector value={language} onValueChange={setLanguage} />
-          <Input
-            value={input}
-            onChange={(e) => setInput(e.target.value)}
-            onKeyPress={handleKeyPress}
-            placeholder="Ask about Hindu Dharma, rituals, sampradayas..."
-            disabled={isLoading}
-            className="flex-1"
-          />
-          <Button onClick={sendMessage} disabled={isLoading || !input.trim()}>
-            <Send className="w-4 h-4" />
-          </Button>
+        <div className={`flex ${isMobile ? 'flex-col space-y-2' : 'items-center space-x-2'}`}>
+          <div className={`${isMobile ? 'w-full' : ''}`}>
+            <LanguageSelector value={language} onValueChange={setLanguage} />
+          </div>
+          <div className={`flex ${isMobile ? 'space-x-2' : 'flex-1 space-x-2'}`}>
+            <Input
+              value={input}
+              onChange={(e) => setInput(e.target.value)}
+              onKeyPress={handleKeyPress}
+              placeholder={isMobile ? "Ask about Hindu Dharma..." : "Ask about Hindu Dharma, rituals, sampradayas..."}
+              disabled={isLoading}
+              className="flex-1"
+            />
+            <Button 
+              onClick={sendMessage} 
+              disabled={isLoading || !input.trim()}
+              className={`${isMobile ? 'h-10 px-3' : ''}`}
+            >
+              <Send className="w-4 h-4" />
+            </Button>
+          </div>
         </div>
       </CardContent>
     </Card>
