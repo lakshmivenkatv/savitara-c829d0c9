@@ -48,7 +48,7 @@ export const Navigation = ({ user }: NavigationProps) => {
           <div className="flex items-center space-x-8">
             <Link to="/" className="flex items-center space-x-3">
               <img 
-                src="/lovable-uploads/3bb19521-3c50-41cf-b574-d98f5598202b.png" 
+                src="/lovable-uploads/99d1990b-bebb-47fd-8ab0-9342256d1878.png" 
                 alt="Savitara Logo" 
                 className={`object-contain ${isMobile ? 'w-8 h-8' : 'w-10 h-10'}`}
               />
