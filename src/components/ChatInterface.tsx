@@ -162,6 +162,42 @@ export const ChatInterface = ({
       'kesava', 'keshava', 'govinda', 'madhava', 'narayana', 'vasudeva',
       'nama', 'nam', 'namam', 'japa', 'kirtan', 'bhajan', 'chanting',
       
+      // Vishnu avatars and forms
+      'narasimha', 'varaha', 'vamana', 'parashurama', 'kalki', 'buddha', 'matsya', 'kurma',
+      'jagannath', 'vitthal', 'vithoba', 'panduranga', 'hari', 'mukunda', 'damodara',
+      
+      // Shiva forms and names
+      'rudra', 'nataraja', 'bhairava', 'mahadeva', 'mahesh', 'shankar', 'bholenath',
+      'neelkanth', 'gangadhar', 'ardhanarishwar', 'dakshinamurthy',
+      
+      // Devi forms and names
+      'shakti', 'amba', 'ambika', 'chandi', 'chamunda', 'bhavani', 'jagadamba',
+      'mahamaya', 'bhairavi', 'tara', 'chinnamasta', 'bagalamukhi', 'matangi',
+      'kamala', 'tripura', 'sundari', 'bhuvaneshwari', 'dhumavati', 'bagala',
+      
+      // Ganesha names
+      'ganapati', 'vinayaka', 'vighnaharta', 'lambodara', 'ekadanta',
+      
+      // Kartikeya/Murugan names
+      'kartikeya', 'murugan', 'skanda', 'subramanya', 'kumara', 'shadanana',
+      
+      // Hanuman names
+      'anjaneya', 'maruti', 'pavanaputra', 'kesarisuta', 'bajrangbali',
+      
+      // Planetary deities
+      'chandra', 'soma', 'mangal', 'angaraka', 'budh', 'guru', 'brihaspati',
+      'shukra', 'shani', 'rahu', 'ketu', 'navagraha',
+      
+      // Directional guardians
+      'agni', 'nirrti', 'varuna', 'kubera', 'ishana', 'dikpala',
+      
+      // River goddesses
+      'ganga', 'yamuna', 'godavari', 'kaveri', 'narmada', 'sindhu',
+      
+      // Other important deities
+      'brahmaputra', 'kamadeva', 'rati', 'vasant', 'kubera', 'yaksha',
+      'gandharva', 'apsara', 'kinnar', 'garuda', 'nandi', 'vahana',
+      
       // Festivals and observances
       'diwali', 'deepavali', 'holi', 'navratri', 'dussehra', 'dasara', 'dussera', 'janmashtami', 'shivaratri',
       'karva', 'chauth', 'ekadashi', 'amavasya', 'purnima', 'vrat', 'vratam',
