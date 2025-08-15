@@ -105,6 +105,15 @@ export const ChatInterface = ({
     }
   }, [onDocumentsProcessed]);
 
+  // Function to normalize text for better matching across Indic scripts
+  const normalizeText = (text: string): string => {
+    return text
+      .normalize('NFC') // Normalize Unicode to composed form
+      .toLowerCase()
+      .trim()
+      .replace(/\s+/g, ' '); // Replace multiple spaces with single space
+  };
+
   // Function to validate if question is related to Hindu Dharma
   const isHinduDharmaRelated = (question: string): boolean => {
     const hinduDharmaKeywords = [
@@ -360,12 +369,16 @@ export const ChatInterface = ({
       'तिरुपति', 'रामेश्वरम्', 'द्वारका', 'पुरी', 'बद्रीनाथ', 'केदारनाथ'
     ];
 
-    const questionLower = question.toLowerCase();
+    // Normalize the question for better Indic script matching
+    const normalizedQuestion = normalizeText(question);
     
     // Check if question contains any Hindu Dharma related keywords
-    const hasKeywords = hinduDharmaKeywords.some(keyword => 
-      questionLower.includes(keyword)
-    );
+    const hasKeywords = hinduDharmaKeywords.some(keyword => {
+      const normalizedKeyword = normalizeText(keyword);
+      return normalizedQuestion.includes(normalizedKeyword) || 
+             normalizedQuestion.includes(keyword) || // fallback for exact match
+             question.includes(keyword); // direct match for Indic scripts
+    });
     
     // Additional pattern matching for Indian cultural context
     const culturalPatterns = [
